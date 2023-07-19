@@ -9,25 +9,27 @@ spec:
   - type: xlrelease.FolderVersioningSettings
     gitConnection: Digital.ai Official Repository
     scmPath: workflows/argo-cd
-    branch: main
+    branch: migrate-workflows
     exportPatterns: false
     exportVariables: false
     exportTriggers: false
     exportConfiguration: false
     exportDashboards: false
     exportNotifications: false
-- directory: Digital.ai - Deploy
+    versioningStyle: multipleFilesPerCIType
+- directory: Digital.ai Deploy
   children:
   - type: xlrelease.FolderVersioningSettings
     gitConnection: Digital.ai Official Repository
     scmPath: workflows/digitalai-deploy
-    branch: main
+    branch: migrate-workflows
     exportPatterns: false
     exportVariables: false
     exportTriggers: false
     exportConfiguration: false
     exportDashboards: false
     exportNotifications: false
+    versioningStyle: multipleFilesPerCIType
 ---
 apiVersion: xl-release/v1
 kind: Permissions
