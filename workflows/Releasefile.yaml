@@ -9,7 +9,7 @@ spec:
   - type: xlrelease.FolderVersioningSettings
     gitConnection: Digital.ai Official Repository
     scmPath: workflows/argo-cd
-    branch: migrate-workflows
+    branch: main
     exportPatterns: false
     exportVariables: false
     exportTriggers: false
@@ -22,7 +22,7 @@ spec:
   - type: xlrelease.FolderVersioningSettings
     gitConnection: Digital.ai Official Repository
     scmPath: workflows/digitalai-deploy
-    branch: migrate-workflows
+    branch: main
     exportPatterns: false
     exportVariables: false
     exportTriggers: false
