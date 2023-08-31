@@ -1,25 +1,30 @@
+# Exported from:        http://ip-172-31-12-123.ap-south-1.compute.internal:5516/
+# Release version:      23.3.0-beta.5
+# Date created:         Thu Aug 31 08:05:23 UTC 2023
+
 ---
 apiVersion: xl-release/v1
 kind: Templates
 metadata:
-  home: Digital.ai - Official/Workflows/ArgoCD
+  home: Changes to argoCd workflows
 spec:
 - template: Delete Application in ArgoCD
-  kind: WORKFLOW
-  scheduledStartDate: 2023-04-27T18:30:00+05:30
-  dueDate: 2023-04-27T19:30:00+05:30
+  scheduledStartDate: 2023-04-27T13:00:00Z
+  dueDate: 2023-04-27T14:00:00Z
   phases:
   - phase: Delete Application in ArgoCD
     tasks:
     - name: Application Details
       type: xlrelease.UserInputTask
       description: Please enter the required information below.
+      owner: "${release.owner}"
       variables:
       - projectDetails
       - argoCDApiServer
       - Application_name
     - name: Delete Application in ArgoCD
       type: argocd.RemoveApplication
+      owner: "${release.owner}"
       variableMapping:
         argoServer: "${argoCDApiServer}"
       capabilities:
@@ -28,7 +33,9 @@ spec:
     - name: Delete Application in Release
       type: xlrelease.UserInputTask
       description: Please enter the required information below.
+      owner: "${release.owner}"
     color: '#3d6c9e'
+  kind: WORKFLOW
   categories:
   - Application onboarding
   variables:
@@ -55,4 +62,4 @@ spec:
   logo:
     type: xlrelease.TemplateLogo
     contentType: image/png
-    file: !file "template-logo/argo-icon.png"
+    file: !file "template-logo/01d81f95a92b5ebbae77081f9988c520aa79d73e/argo-icon.png"

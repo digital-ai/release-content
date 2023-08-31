@@ -1,8 +1,13 @@
+# Exported from:        http://ip-172-31-12-123.ap-south-1.compute.internal:5516/
+# Release version:      23.3.0-beta.5
+# Date created:         Thu Aug 31 08:05:23 UTC 2023
+
 ---
 apiVersion: xl-release/v1
 kind: Import
 spec:
   imports:
+  - Notifications.yaml
   - Workflow_Delete Application in ArgoCD.yaml
   - Workflow_Install Argo Rollouts.yaml
   - Workflow_Install ArgoCD.yaml

@@ -1,15 +1,18 @@
+# Exported from:        http://ip-172-31-12-123.ap-south-1.compute.internal:5516/
+# Release version:      23.3.0-beta.5
+# Date created:         Thu Aug 31 08:05:23 UTC 2023
+
 ---
 apiVersion: xl-release/v1
 kind: Templates
 metadata:
-  home: Digital.ai - Official/Workflows/Digital.ai Deploy
+  home: Changes to argoCd workflows
 spec:
 - template: Setup ArgoCD application with initial deployment
-  kind: WORKFLOW
   description: "Create an application in ArgoCD that can be deployed to Kubernetes\
     \ cluster, with initial deployment"
-  scheduledStartDate: 2022-12-13T13:30:00+05:30
-  dueDate: 2022-12-13T14:30:00+05:30
+  scheduledStartDate: 2022-12-13T08:00:00Z
+  dueDate: 2022-12-13T09:00:00Z
   phases:
   - phase: Check if application exists
     tasks:
@@ -31,6 +34,7 @@ spec:
         If the application does not exist, the task will be completed and the workflow will proceed to the next task.
 
         However, if the application already exists, the task will fail, and the workflow will be aborted. This is to prevent creating duplicate applications and ensure the proper functioning of the Argo CD Server.
+      owner: "${release.owner}"
       variableMapping:
         commandResponse: "${applicationExistsResponse}"
         argoServer: "${argoCDApiServer}"
@@ -63,6 +67,7 @@ spec:
     - name: Check if namespace exists
       type: kubernetes.ExistsNamespace
       description: "Checks if '${namespace}' namespace already exists."
+      owner: "${release.owner}"
       variableMapping:
         server: "${kubernetesApiServer}"
         commandResponse: "${namespaceExistsResponse}"
@@ -76,6 +81,7 @@ spec:
       type: kubernetes.CreateNamespace
       description: "Creates the ${namespace} namespace. If it already exists, this\
         \ task is skipped."
+      owner: "${release.owner}"
       precondition: |-
         import json
 
@@ -101,6 +107,7 @@ spec:
       type: argocd.CreateApplication
       description: "Deploys ArgoCD application with given information about application\
         \ name, project, git repo, path and branch."
+      owner: "${release.owner}"
       variableMapping:
         argoServer: "${argoCDApiServer}"
       capabilities:
@@ -117,6 +124,7 @@ spec:
     - name: Get application status
       type: argocd.CheckApplicationStatus
       description: Checks if application is successfully deployed.
+      owner: "${release.owner}"
       variableMapping:
         argoServer: "${argoCDApiServer}"
       capabilities:
@@ -124,7 +132,7 @@ spec:
       applicationName: "${applicationName}"
     - name: Create managed application
       type: xlrelease.ScriptTask
-      owner: admin
+      owner: "${release.owner}"
       script: |-
         from com.xebialabs.xlrelease.api.v1.views import ManagedApplicationView
         from com.xebialabs.xlrelease.api.v1.views import ConnectionServerView
@@ -149,6 +157,7 @@ spec:
 
         res = managedApplicationApi.addManagedApplication(requestBody)
     color: '#3d6c9e'
+  kind: WORKFLOW
   categories:
   - Application onboarding
   variables:
@@ -225,4 +234,4 @@ spec:
   logo:
     type: xlrelease.TemplateLogo
     contentType: image/png
-    file: !file "template-logo/argo-icon.png"
+    file: !file "template-logo/3da925ba0f190b8e450edd130822ee9edb822652/argo-icon.png"
