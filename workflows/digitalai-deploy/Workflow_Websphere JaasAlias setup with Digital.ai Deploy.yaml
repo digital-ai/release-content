@@ -1,16 +1,19 @@
+# Exported from:        http://ip-172-31-12-123.ap-south-1.compute.internal:5516/
+# Release version:      23.3.0-beta.5
+# Date created:         Thu Aug 31 07:46:46 UTC 2023
+
 ---
 apiVersion: xl-release/v1
 kind: Templates
 metadata:
-  home: Digital.ai - Official/Workflows/Digital.ai Deploy
+  home: Changes to Workflows
 spec:
 - template: Websphere JaasAlias setup with Digital.ai Deploy
-  kind: WORKFLOW
   description: "Easily create an application in Digital.ai Deploy that can be used\
     \ to create a JaasAlias in a remote Websphere Server, including its respective\
     \ environment and infrastructure setup."
-  scheduledStartDate: 2023-02-14T09:00:00+05:30
-  dueDate: 2023-02-14T10:00:00+05:30
+  scheduledStartDate: 2023-02-14T03:30:00Z
+  dueDate: 2023-02-14T04:30:00Z
   phases:
   - phase: Setup Infra and Env
     tasks:
@@ -19,18 +22,18 @@ spec:
       description: Select the Deploy Server Connection onto which the Websphere application
         has to be created. You can create a new connection if you have not created
         one.
-      owner: admin
+      owner: "${release.owner}"
       variables:
       - deploy-server
     - name: Specify Environment Name
       type: xlrelease.UserInputTask
       description: Please enter the required information below.
-      owner: admin
+      owner: "${release.owner}"
       variables:
       - environment-name
     - name: Create Environment
       type: deploy.CreateCI
-      owner: admin
+      owner: "${release.owner}"
       variableMapping:
         server: "${deploy-server}"
       capabilities:
@@ -41,7 +44,7 @@ spec:
     - name: Specify WAS Host Parameters
       type: xlrelease.UserInputTask
       description: Please enter the required information below.
-      owner: admin
+      owner: "${release.owner}"
       variables:
       - host-identifier
       - sudo-username
@@ -52,7 +55,7 @@ spec:
       - ssh-password
     - name: Configure Remote Host
       type: deploy.CreateCI
-      owner: admin
+      owner: "${release.owner}"
       variableMapping:
         server: "${deploy-server}"
       capabilities:
@@ -76,7 +79,7 @@ spec:
         }
     - name: Check Remote Host Connection
       type: deploy.ControlTask
-      owner: admin
+      owner: "${release.owner}"
       variableMapping:
         server: "${deploy-server}"
       capabilities:
@@ -91,7 +94,7 @@ spec:
     - name: Specify WAS Deployment Manager Parameters
       type: xlrelease.UserInputTask
       description: Please enter the required information below.
-      owner: admin
+      owner: "${release.owner}"
       variables:
       - cell-name
       - was-home
@@ -99,7 +102,7 @@ spec:
       - was-password
     - name: Configure Websphere Deployment Manager
       type: deploy.CreateCI
-      owner: admin
+      owner: "${release.owner}"
       variableMapping:
         server: "${deploy-server}"
       capabilities:
@@ -118,11 +121,12 @@ spec:
     - name: Specify WAS Node Agent Parameters
       type: xlrelease.UserInputTask
       description: Please enter the required information below.
-      owner: admin
+      owner: "${release.owner}"
       variables:
       - node-name
     - name: Configure Websphere Node Agent
       type: deploy.CreateCI
+      owner: "${release.owner}"
       capabilities:
       - remote
       ciID: "Infrastructure/${host-identifier}/${cell-name}/${node-name}"
@@ -133,11 +137,12 @@ spec:
     - name: Specify WAS Server Parameters
       type: xlrelease.UserInputTask
       description: Please enter the required information below.
-      owner: admin
+      owner: "${release.owner}"
       variables:
       - server-name
     - name: Configure Websphere Server
       type: deploy.CreateCI
+      owner: "${release.owner}"
       capabilities:
       - remote
       ciID: "Infrastructure/${host-identifier}/${cell-name}/${node-name}/${server-name}"
@@ -151,12 +156,12 @@ spec:
     - name: Specify WAS Application Name
       type: xlrelease.UserInputTask
       description: Please enter the required information below.
-      owner: admin
+      owner: "${release.owner}"
       variables:
       - application-name
     - name: Create Application
       type: deploy.CreateCI
-      owner: admin
+      owner: "${release.owner}"
       capabilities:
       - remote
       ciID: "Applications/${application-name}"
@@ -165,12 +170,12 @@ spec:
     - name: Specify Deployment Package
       type: xlrelease.UserInputTask
       description: Please enter the required information below.
-      owner: admin
+      owner: "${release.owner}"
       variables:
       - package-name
     - name: Create Deployment Package
       type: deploy.CreateCI
-      owner: admin
+      owner: "${release.owner}"
       capabilities:
       - remote
       ciID: "Applications/${application-name}/${package-name}"
@@ -179,13 +184,13 @@ spec:
     - name: Specify WAS JaasAliasSpec Parameters
       type: xlrelease.UserInputTask
       description: Please enter the required information below.
-      owner: admin
+      owner: "${release.owner}"
       variables:
       - jaas-password
       - jaas-username
     - name: Create Sample WAS JaasAliasSpec
       type: deploy.CreateCI
-      owner: admin
+      owner: "${release.owner}"
       capabilities:
       - remote
       ciID: "Applications/${application-name}/${package-name}/${jaas-alias-name}"
@@ -197,7 +202,7 @@ spec:
         }
     - name: Add Managed Application
       type: xlrelease.ScriptTask
-      owner: admin
+      owner: "${release.owner}"
       script: |-
         from com.xebialabs.xlrelease.api.v1.views import ManagedApplicationView
         from com.xebialabs.xlrelease.api.v1.views import ConnectionServerView
@@ -219,6 +224,7 @@ spec:
 
         res = managedApplicationApi.addManagedApplication(requestBody)
     color: '#3d6c9e'
+  kind: WORKFLOW
   categories:
   - Application onboarding
   variables:
@@ -292,4 +298,4 @@ spec:
   logo:
     type: xlrelease.TemplateLogo
     contentType: image/svg+xml
-    file: !file "template-logo/xlr-xld-plugin.svg"
+    file: !file "template-logo/9dda4235a32e0a48f98fd815771690a722aeb812/xlr-xld-plugin.svg"

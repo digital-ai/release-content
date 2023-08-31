@@ -1,16 +1,19 @@
+# Exported from:        http://ip-172-31-12-123.ap-south-1.compute.internal:5516/
+# Release version:      23.3.0-beta.5
+# Date created:         Thu Aug 31 07:46:46 UTC 2023
+
 ---
 apiVersion: xl-release/v1
 kind: Templates
 metadata:
-  home: Digital.ai - Official/Workflows/Digital.ai Deploy
+  home: Changes to Workflows
 spec:
 - template: Tomcat DataSource Setup on SSH Host with Digital.ai Deploy
-  kind: WORKFLOW
   description: "Easily create an application in Digital.ai Deploy that can be used\
     \ to create a DataSource in a Remote Tomcat Server, including its respective environment\
     \ and infrastructure setup."
-  scheduledStartDate: 2023-03-23T09:00:00+05:30
-  dueDate: 2023-03-23T10:00:00+05:30
+  scheduledStartDate: 2023-03-23T03:30:00Z
+  dueDate: 2023-03-23T04:30:00Z
   phases:
   - phase: Setup Infra and Env
     tasks:
@@ -19,18 +22,18 @@ spec:
       description: Select the Deploy Server Connection onto which the Tomcat application
         has to be created. You can create a new connection if you have not created
         one.
-      owner: admin
+      owner: "${release.owner}"
       variables:
       - deploy-server
     - name: Specify Environment Name
       type: xlrelease.UserInputTask
       description: Please enter the required information below.
-      owner: admin
+      owner: "${release.owner}"
       variables:
       - environment-name
     - name: Create Environment
       type: deploy.CreateCI
-      owner: admin
+      owner: "${release.owner}"
       variableMapping:
         server: "${deploy-server}"
       capabilities:
@@ -41,7 +44,7 @@ spec:
     - name: Specify Tomcat Host Parameters
       type: xlrelease.UserInputTask
       description: Please enter the required information below.
-      owner: admin
+      owner: "${release.owner}"
       variables:
       - host-identifier
       - sudo-username
@@ -52,7 +55,7 @@ spec:
       - ssh-privatekey
     - name: Configure Remote Host
       type: deploy.CreateCI
-      owner: admin
+      owner: "${release.owner}"
       variableMapping:
         server: "${deploy-server}"
       capabilities:
@@ -78,7 +81,7 @@ spec:
       envID: "Environments/${environment-name}"
     - name: Check Remote Host Connection
       type: deploy.ControlTask
-      owner: admin
+      owner: "${release.owner}"
       variableMapping:
         server: "${deploy-server}"
       capabilities:
@@ -93,7 +96,7 @@ spec:
     - name: Specify Tomcat Server Parameters
       type: xlrelease.UserInputTask
       description: Please enter the required information below.
-      owner: admin
+      owner: "${release.owner}"
       variables:
       - server-name
       - tomcat-home
@@ -103,7 +106,7 @@ spec:
       - tomcat-status-exptected-output
     - name: Configure Tomcat Server
       type: deploy.CreateCI
-      owner: admin
+      owner: "${release.owner}"
       variableMapping:
         server: "${deploy-server}"
       capabilities:
@@ -127,7 +130,7 @@ spec:
       envID: "Environments/${environment-name}"
     - name: Check Tomcat Status
       type: deploy.ControlTask
-      owner: admin
+      owner: "${release.owner}"
       variableMapping:
         server: "${deploy-server}"
       capabilities:
@@ -142,12 +145,12 @@ spec:
     - name: Specify Tomcat Virtual Host Name
       type: xlrelease.UserInputTask
       description: Please enter the required information below.
-      owner: admin
+      owner: "${release.owner}"
       variables:
       - virtual-host-name
     - name: Configure Tomcat VirtualHost
       type: deploy.CreateCI
-      owner: admin
+      owner: "${release.owner}"
       variableMapping:
         server: "${deploy-server}"
       capabilities:
@@ -162,12 +165,12 @@ spec:
     - name: Specify Application Name
       type: xlrelease.UserInputTask
       description: Please enter the required information below.
-      owner: admin
+      owner: "${release.owner}"
       variables:
       - application-name
     - name: Setup Application
       type: deploy.CreateCI
-      owner: admin
+      owner: "${release.owner}"
       variableMapping:
         server: "${deploy-server}"
       capabilities:
@@ -178,12 +181,12 @@ spec:
     - name: Specify Package Name
       type: xlrelease.UserInputTask
       description: Please enter the required information below.
-      owner: admin
+      owner: "${release.owner}"
       variables:
       - package-name
     - name: Create Deployment Package
       type: deploy.CreateCI
-      owner: admin
+      owner: "${release.owner}"
       variableMapping:
         server: "${deploy-server}"
       capabilities:
@@ -194,7 +197,7 @@ spec:
     - name: Specify Tomcat Datasource
       type: xlrelease.UserInputTask
       description: Please enter the required information below.
-      owner: admin
+      owner: "${release.owner}"
       variables:
       - datasource-name
       - jndi-name
@@ -205,7 +208,7 @@ spec:
       - db-password
     - name: Create Sample Tomcat DataSourceSpec
       type: deploy.CreateCI
-      owner: admin
+      owner: "${release.owner}"
       variableMapping:
         server: "${deploy-server}"
       capabilities:
@@ -223,7 +226,7 @@ spec:
         }
     - name: Add Managed Application
       type: xlrelease.ScriptTask
-      owner: admin
+      owner: "${release.owner}"
       script: |-
         from com.xebialabs.xlrelease.api.v1.views import ManagedApplicationView
         from com.xebialabs.xlrelease.api.v1.views import ConnectionServerView
@@ -245,6 +248,7 @@ spec:
 
         res = managedApplicationApi.addManagedApplication(requestBody)
     color: '#3d6c9e'
+  kind: WORKFLOW
   categories:
   - Application onboarding
   variables:
@@ -330,4 +334,4 @@ spec:
   logo:
     type: xlrelease.TemplateLogo
     contentType: image/svg+xml
-    file: !file "template-logo/xlr-xld-plugin.svg"
+    file: !file "template-logo/9a6971f732677b76071b3d996d2cbb1d77fb617a/xlr-xld-plugin.svg"

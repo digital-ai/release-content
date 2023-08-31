@@ -1,16 +1,19 @@
+# Exported from:        http://ip-172-31-12-123.ap-south-1.compute.internal:5516/
+# Release version:      23.3.0-beta.5
+# Date created:         Thu Aug 31 07:46:46 UTC 2023
+
 ---
 apiVersion: xl-release/v1
 kind: Templates
 metadata:
-  home: Digital.ai - Official/Workflows/Digital.ai Deploy
+  home: Changes to Workflows
 spec:
 - template: GCP Application setup with Digital.ai Deploy for virtual machine instance
   description: "Seamless create an application in Digital.ai Deploy that can set up\
     \ virtual machine instances in GCP, including its respective environment and infrastructure\
     \ configuration."
-  scheduledStartDate: 2023-03-31T09:00:00+05:30
-  dueDate: 2023-03-31T10:00:00+05:30
-  kind: WORKFLOW
+  scheduledStartDate: 2023-03-31T03:30:00Z
+  dueDate: 2023-03-31T04:30:00Z
   phases:
   - phase: Setup Env and Infra
     tasks:
@@ -19,18 +22,18 @@ spec:
       description: Select the Deploy Server Connection onto which the Google Cloud
         Platform application has to be created. You can create a new connection if
         you have not created one.
-      owner: admin
+      owner: "${release.owner}"
       variables:
       - deploy-server
     - name: Specify Environment Name
       type: xlrelease.UserInputTask
       description: Please enter the required information below.
-      owner: admin
+      owner: "${release.owner}"
       variables:
       - environment_identifier
     - name: Create Environment
       type: deploy.CreateCI
-      owner: admin
+      owner: "${release.owner}"
       variableMapping:
         server: "${deploy-server}"
       capabilities:
@@ -41,7 +44,7 @@ spec:
     - name: Specify Google Account Parameters
       type: xlrelease.UserInputTask
       description: Please enter the required information below.
-      owner: admin
+      owner: "${release.owner}"
       variables:
       - google_account_cloud_name
       - gcp_project_id
@@ -49,7 +52,7 @@ spec:
       - private_key
     - name: Create Google Account Cloud Infra
       type: deploy.CreateCI
-      owner: admin
+      owner: "${release.owner}"
       variableMapping:
         server: "${deploy-server}"
       capabilities:
@@ -66,7 +69,7 @@ spec:
       envID: "Environments/${environment_identifier}"
     - name: Check Connection of Google account
       type: deploy.ControlTask
-      owner: admin
+      owner: "${release.owner}"
       variableMapping:
         server: "${deploy-server}"
       capabilities:
@@ -83,12 +86,12 @@ spec:
     - name: Specify Application Name
       type: xlrelease.UserInputTask
       description: Please enter the required information below.
-      owner: admin
+      owner: "${release.owner}"
       variables:
       - application_identifier
     - name: Create Application
       type: deploy.CreateCI
-      owner: admin
+      owner: "${release.owner}"
       variableMapping:
         server: "${deploy-server}"
       capabilities:
@@ -99,12 +102,12 @@ spec:
     - name: Specify Package Name
       type: xlrelease.UserInputTask
       description: Please enter the required information below.
-      owner: admin
+      owner: "${release.owner}"
       variables:
       - application_version
     - name: Create Deployment Package
       type: deploy.CreateCI
-      owner: admin
+      owner: "${release.owner}"
       variableMapping:
         server: "${deploy-server}"
       capabilities:
@@ -114,7 +117,7 @@ spec:
     - name: Specify Intance Spec Parameters
       type: xlrelease.UserInputTask
       description: Please enter the required information below.
-      owner: admin
+      owner: "${release.owner}"
       variables:
       - zone
       - machine
@@ -124,7 +127,7 @@ spec:
       - wait_time_for_destroy
     - name: Create Google Instance spec
       type: deploy.CreateCI
-      owner: admin
+      owner: "${release.owner}"
       variableMapping:
         server: "${deploy-server}"
       capabilities:
@@ -142,7 +145,7 @@ spec:
         }
     - name: Add Managed Application
       type: xlrelease.ScriptTask
-      owner: admin
+      owner: "${release.owner}"
       script: |-
         from com.xebialabs.xlrelease.api.v1.views import ManagedApplicationView
         from com.xebialabs.xlrelease.api.v1.views import ConnectionServerView
@@ -164,6 +167,11 @@ spec:
 
         res = managedApplicationApi.addManagedApplication(requestBody)
     color: '#3d6c9e'
+  kind: WORKFLOW
+  categories:
+  - Application Life Cycle Management
+  - Cloud & Container
+  - Application onboarding
   variables:
   - type: xlrelease.StringVariable
     key: environment_identifier
@@ -218,11 +226,7 @@ spec:
     key: environment-name
   riskProfile: Default risk profile
   author: Digital.ai
-  categories:
-  - Application onboarding
-  - Cloud & Container
-  - Application Life Cycle Management
   logo:
     type: xlrelease.TemplateLogo
     contentType: image/svg+xml
-    file: !file "template-logo/xlr-xld-plugin.svg"
+    file: !file "template-logo/1acf43f120046fcbeca6ce60329683dc10bb741d/xlr-xld-plugin.svg"
