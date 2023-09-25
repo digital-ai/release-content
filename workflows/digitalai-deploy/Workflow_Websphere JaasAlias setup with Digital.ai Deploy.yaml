@@ -5,31 +5,39 @@ metadata:
   home: Digital.ai - Official/Workflows/Digital.ai Deploy
 spec:
 - template: Websphere JaasAlias setup with Digital.ai Deploy
-  kind: WORKFLOW
   description: "Easily create an application in Digital.ai Deploy that can be used\
     \ to create a JaasAlias in a remote Websphere Server, including its respective\
     \ environment and infrastructure setup."
-  scheduledStartDate: 2023-02-14T09:00:00+05:30
-  dueDate: 2023-02-14T10:00:00+05:30
+  scheduledStartDate: 2023-02-14T03:30:00Z
+  dueDate: 2023-02-14T04:30:00Z
   phases:
   - phase: Setup Infra and Env
     tasks:
+    - name: Specify Run As User
+      type: xlrelease.UserInputTask
+      description: Specify the Run as user credentials which will be used to run the
+        workflow. All automated tasks will be run as this user.
+      variables:
+      - run-as-user
+      - run-as-password
     - name: Specify Deploy Server Details
       type: xlrelease.UserInputTask
-      description: Select the Deploy Server Connection onto which the Websphere application
-        has to be created. You can create a new connection if you have not created
-        one.
+      description: Select the Digital.ai Deploy Server Connection onto which the Websphere
+        application has to be created. You can create a new connection if you have
+        not created one.
       owner: admin
       variables:
       - deploy-server
     - name: Specify Environment Name
       type: xlrelease.UserInputTask
-      description: Please enter the required information below.
+      description: Specify a name for the environment CI that should be created for
+        AWS in Digital.ai Deploy server.
       owner: admin
       variables:
       - environment-name
     - name: Create Environment
       type: deploy.CreateCI
+      description: Creates an Environment CI in Digital.ai Deploy Server.
       owner: admin
       variableMapping:
         server: "${deploy-server}"
@@ -40,7 +48,8 @@ spec:
       jsonDescriptor: "{}"
     - name: Specify WAS Host Parameters
       type: xlrelease.UserInputTask
-      description: Please enter the required information below.
+      description: Specify the SSH connection details to connect to the Webshere hosting
+        machine.
       owner: admin
       variables:
       - host-identifier
@@ -52,6 +61,8 @@ spec:
       - ssh-password
     - name: Configure Remote Host
       type: deploy.CreateCI
+      description: Creates an Overthere SSH host CI in Digital.ai Deploy Server using
+        the details specified in the previous step.
       owner: admin
       variableMapping:
         server: "${deploy-server}"
@@ -70,12 +81,25 @@ spec:
             "address":"${address}",
             "port":22,
             "username":"${ssh-username}",
-            "password":"${ssh-password}",
             "privateKeyFile":"",
             "passphrase":""
         }
+    - name: Set WAS Host Credentials
+      type: deploy.UpdateCIPropertyWithSecretValue
+      description: Sets the SSH password in the previously created Host CI in Digital.ai
+        Deploy server.
+      variableMapping:
+        server: "${deploy-server}"
+        propertyValue: "${ssh-password}"
+      capabilities:
+      - remote
+      ciID: "Infrastructure/${host-identifier}"
+      ciProperty: password
+      propertyValue: !value "deploy_UpdateCIPropertyWithSecretValue_Set_WAS_Host_Credentials_propertyValue"
     - name: Check Remote Host Connection
       type: deploy.ControlTask
+      description: Runs a Check Connection control task on the created SSH host CI
+        in the Digital.ai Deploy server to validate the specified credentials.
       owner: admin
       variableMapping:
         server: "${deploy-server}"
@@ -90,7 +114,7 @@ spec:
       connectionRetries: 10
     - name: Specify WAS Deployment Manager Parameters
       type: xlrelease.UserInputTask
-      description: Please enter the required information below.
+      description: Specify the connection details for Webshere.
       owner: admin
       variables:
       - cell-name
@@ -99,6 +123,8 @@ spec:
       - was-password
     - name: Configure Websphere Deployment Manager
       type: deploy.CreateCI
+      description: Creates a Websphere Deployment Manager CI in the Digital.ai Deploy
+        server using the details specified in the previous tasks.
       owner: admin
       variableMapping:
         server: "${deploy-server}"
@@ -110,19 +136,33 @@ spec:
         {
             "wasHome": "${was-home}",
             "username": "${was-username}",
-            "password": "${was-password}",
             "version": "WAS_90"
         }
       addToEnvironment: true
       envID: "Environments/${environment-name}"
+    - name: Set Websphere Credentials
+      type: deploy.UpdateCIPropertyWithSecretValue
+      description: Sets the Websphere password in the previously created Deployment
+        Manager CI.
+      variableMapping:
+        propertyValue: "${was-password}"
+        server: "${deploy-server}"
+      capabilities:
+      - remote
+      ciID: "Infrastructure/${host-identifier}/${cell-name}"
+      ciProperty: password
     - name: Specify WAS Node Agent Parameters
       type: xlrelease.UserInputTask
-      description: Please enter the required information below.
+      description: Specify the name of the Websphere Node Agent CI to be created in
+        Digital.ai Deploy Server.
       owner: admin
       variables:
       - node-name
     - name: Configure Websphere Node Agent
       type: deploy.CreateCI
+      description: Creates a Websphere Node Agent CI in the Digital.ai Deploy server.
+      variableMapping:
+        server: "${deploy-server}"
       capabilities:
       - remote
       ciID: "Infrastructure/${host-identifier}/${cell-name}/${node-name}"
@@ -132,12 +172,16 @@ spec:
       envID: "Environments/${environment-name}"
     - name: Specify WAS Server Parameters
       type: xlrelease.UserInputTask
-      description: Please enter the required information below.
+      description: Specify the name of the Websphere Server CI to be created in the
+        Digital.ai Deploy server.
       owner: admin
       variables:
       - server-name
     - name: Configure Websphere Server
       type: deploy.CreateCI
+      description: Creates a Websphere Server CI in the Digital.ai Deploy server.
+      variableMapping:
+        server: "${deploy-server}"
       capabilities:
       - remote
       ciID: "Infrastructure/${host-identifier}/${cell-name}/${node-name}/${server-name}"
@@ -150,13 +194,18 @@ spec:
     tasks:
     - name: Specify WAS Application Name
       type: xlrelease.UserInputTask
-      description: Please enter the required information below.
+      description: Specify the name of the application to be created in the Digital.ai
+        Deploy server.
       owner: admin
       variables:
       - application-name
     - name: Create Application
       type: deploy.CreateCI
+      description: Creates an application with the specified name in the Digital.ai
+        Deploy server.
       owner: admin
+      variableMapping:
+        server: "${deploy-server}"
       capabilities:
       - remote
       ciID: "Applications/${application-name}"
@@ -164,13 +213,18 @@ spec:
       jsonDescriptor: "{}"
     - name: Specify Deployment Package
       type: xlrelease.UserInputTask
-      description: Please enter the required information below.
+      description: Specify a package name to be created within the application created
+        in Digital.ai Deploy server in the previous step.
       owner: admin
       variables:
       - package-name
     - name: Create Deployment Package
       type: deploy.CreateCI
+      description: Creates a deployment package with the specfied name in the application
+        created in Digital.ai Deploy server.
       owner: admin
+      variableMapping:
+        server: "${deploy-server}"
       capabilities:
       - remote
       ciID: "Applications/${application-name}/${package-name}"
@@ -178,25 +232,43 @@ spec:
       jsonDescriptor: "{}"
     - name: Specify WAS JaasAliasSpec Parameters
       type: xlrelease.UserInputTask
-      description: Please enter the required information below.
+      description: Specify the JASS Alias name and password. this will be used to
+        create the application package in the Digital.ai Deploy server.
       owner: admin
       variables:
-      - jaas-password
       - jaas-username
+      - jaas-password
     - name: Create Sample WAS JaasAliasSpec
       type: deploy.CreateCI
+      description: Creates the JASS AliasSpec CI in the application package in Digital.ai
+        Deploy server.
       owner: admin
+      variableMapping:
+        server: "${deploy-server}"
       capabilities:
       - remote
       ciID: "Applications/${application-name}/${package-name}/${jaas-alias-name}"
       ciType: was.JaasAliasSpec
       jsonDescriptor: |-
         {
-        "username": "${jaas-username}",
-        "password": "${jaas-password}"
+        "username": "${jaas-username}"
         }
+    - name: Set JaasAlias Password
+      type: deploy.UpdateCIPropertyWithSecretValue
+      description: Sets the sensitive password information in the created JAAS AliasSpec
+        CI created in the previous step.
+      variableMapping:
+        propertyValue: "${jaas-password}"
+        server: "${deploy-server}"
+      capabilities:
+      - remote
+      ciID: "Infrastructure/${host-identifier}"
+      ciProperty: password
+      propertyValue: !value "deploy_UpdateCIPropertyWithSecretValue_Set_JaasAlias_Password_propertyValue"
     - name: Add Managed Application
       type: xlrelease.ScriptTask
+      description: Adds the created Websphere application to the Digital.ai Release
+        managed application list.
       owner: admin
       script: |-
         from com.xebialabs.xlrelease.api.v1.views import ManagedApplicationView
@@ -219,6 +291,7 @@ spec:
 
         res = managedApplicationApi.addManagedApplication(requestBody)
     color: '#3d6c9e'
+  kind: WORKFLOW
   categories:
   - Application onboarding
   variables:
@@ -240,9 +313,9 @@ spec:
   - type: xlrelease.StringVariable
     key: ssh-username
     value: ssh-username
-  - type: xlrelease.StringVariable
+  - type: xlrelease.PasswordStringVariable
     key: ssh-password
-    value: ssh-password
+    showOnReleaseStart: false
   - type: xlrelease.StringVariable
     key: sudo-username
     value: sudo-username
@@ -259,11 +332,11 @@ spec:
     key: was-home
     value: /opt/IBM/WebSphere/AppServer-1/profiles/Dmgr01
   - type: xlrelease.StringVariable
-    key: was-password
-    value: admin
-  - type: xlrelease.StringVariable
     key: was-username
     value: admin
+  - type: xlrelease.PasswordStringVariable
+    key: was-password
+    showOnReleaseStart: false
   - type: xlrelease.StringVariable
     key: was-version
     value: WAS_90
@@ -274,11 +347,11 @@ spec:
     key: server-name
     value: was-server-1
   - type: xlrelease.StringVariable
-    key: jaas-password
-    value: admin
-  - type: xlrelease.StringVariable
     key: jaas-username
     value: admin
+  - type: xlrelease.PasswordStringVariable
+    key: jaas-password
+    showOnReleaseStart: false
   - type: xlrelease.ReferenceVariable
     key: deploy-server
     showOnReleaseStart: false
@@ -287,6 +360,17 @@ spec:
   - type: xlrelease.StringVariable
     key: jaas-alias-name
     value: Sample JAAS Alias
+  - type: xlrelease.StringVariable
+    key: run-as-user
+    showOnReleaseStart: false
+    label: Run as user
+  - type: xlrelease.PasswordStringVariable
+    key: run-as-password
+    showOnReleaseStart: false
+    label: Run as password
+  scriptUsername: "${run-as-user}"
+  variableMapping:
+    scriptUserPassword: "${run-as-password}"
   author: Digital.ai
   logo:
     type: xlrelease.TemplateLogo
