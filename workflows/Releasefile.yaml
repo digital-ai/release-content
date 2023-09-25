@@ -32,6 +32,48 @@ spec:
     exportDashboards: false
     exportNotifications: false
     versioningStyle: multipleFilesPerCIType
+- directory: Secret Management
+  children:
+  - type: xlrelease.FolderVersioningSettings
+    gitConnection: Digital.ai Official Repository
+    scmPath: workflows/secret-management
+    branch: main
+    exportTemplates: false
+    exportPatterns: false
+    exportVariables: false
+    exportTriggers: false
+    exportConfiguration: false
+    exportDashboards: false
+    exportNotifications: false
+    versioningStyle: multipleFilesPerCIType
+- directory: AWS
+  children:
+  - type: xlrelease.FolderVersioningSettings
+    gitConnection: Digital.ai Official Repository
+    scmPath: workflows/aws
+    branch: main
+    exportTemplates: false
+    exportPatterns: false
+    exportVariables: false
+    exportTriggers: false
+    exportConfiguration: false
+    exportDashboards: false
+    exportNotifications: false
+    versioningStyle: multipleFilesPerCIType
+- directory: Terraform
+  children:
+  - type: xlrelease.FolderVersioningSettings
+    gitConnection: Digital.ai Official Repository
+    scmPath: workflows/terrform
+    branch: main
+    exportTemplates: false
+    exportPatterns: false
+    exportVariables: false
+    exportTriggers: false
+    exportConfiguration: false
+    exportDashboards: false
+    exportNotifications: false
+    versioningStyle: multipleFilesPerCIType
 ---
 apiVersion: xl-release/v1
 kind: Permissions
