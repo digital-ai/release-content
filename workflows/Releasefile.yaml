@@ -68,7 +68,7 @@ spec:
   children:
   - type: xlrelease.FolderVersioningSettings
     gitConnection: Digital.ai Official Repository
-    scmPath: workflows/terrform
+    scmPath: workflows/terraform
     branch: main
     autoImport: true
     exportTemplates: false
