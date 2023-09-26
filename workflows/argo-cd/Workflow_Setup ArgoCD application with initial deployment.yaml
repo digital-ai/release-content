@@ -231,9 +231,11 @@ spec:
   - type: xlrelease.StringVariable
     key: runAsUsername
     showOnReleaseStart: false
+    description: Run automated tasks as this user
   - type: xlrelease.PasswordStringVariable
     key: runAsUserPassword
     showOnReleaseStart: false
+    description: Password for Run Automated Tasks As user
   scriptUsername: "${runAsUsername}"
   variableMapping:
     scriptUserPassword: "${runAsUserPassword}"
