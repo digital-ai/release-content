@@ -17,8 +17,8 @@ spec:
       description: Specify the Run as user credentials which will be used to run the
         workflow. All automated tasks will be run as this user.
       variables:
-      - run-as-user
-      - run-as-password
+      - runAsUsername
+      - runAsUserPassword
     - name: Specify Deploy Server Connection
       type: xlrelease.UserInputTask
       description: Select the Digital.ai Deploy Server Connection onto which the AWS
@@ -26,23 +26,23 @@ spec:
         have not created one.
       owner: admin
       variables:
-      - deploy-server
+      - deployServer
     - name: Specify Environment Name
       type: xlrelease.UserInputTask
       description: Specify a name for the environment CI that should be created for
         AWS in Digital.ai Deploy server.
       owner: admin
       variables:
-      - environment-name
+      - environmentName
     - name: Create Environment
       type: deploy.CreateCI
       description: Creates an Environment CI in Digital.ai Deploy Server.
       owner: admin
       variableMapping:
-        server: "${deploy-server}"
+        server: "${deployServer}"
       capabilities:
       - remote
-      ciID: "Environments/${environment-name}"
+      ciID: "Environments/${environmentName}"
       ciType: udm.Environment
       jsonDescriptor: "{}"
     - name: Specify AWS Connection Parameters
@@ -50,51 +50,51 @@ spec:
       description: Specify the connection details for your AWS account.
       owner: admin
       variables:
-      - awscloud-identifier
-      - access-key
-      - aws-access-secret
-      - aws-session-token
+      - awscloudIdentifier
+      - accessKey
+      - awsAccessSecret
+      - awsSessionToken
     - name: Configure AWS Cloud Connection
       type: deploy.CreateCI
       description: Creates an AWS Cloud CI in Digital.ai Deploy Server with the credentials
         specified in the previous task.
       owner: admin
       variableMapping:
-        server: "${deploy-server}"
+        server: "${deployServer}"
       capabilities:
       - remote
-      ciID: "Infrastructure/${awscloud-identifier}"
+      ciID: "Infrastructure/${awscloudIdentifier}"
       ciType: aws.Cloud
       jsonDescriptor: |-
         {
-            "accesskey":"${access-key}"
+            "accesskey":"${accessKey}"
         }
       addToEnvironment: true
-      envID: "Environments/${environment-name}"
+      envID: "Environments/${environmentName}"
     - name: Set AWS credentials
       type: deploy.UpdateCIPropertyWithSecretValue
       description: Sets the AWS secret value in the Cloud CI created in Digital.ai
         Deploy server in the previous step.
       variableMapping:
-        propertyValue: "${aws-access-secret}"
-        server: "${deploy-server}"
+        propertyValue: "${awsAccessSecret}"
+        server: "${deployServer}"
       capabilities:
       - remote
-      ciID: "Infrastructure/${awscloud-identifier}"
+      ciID: "Infrastructure/${awscloudIdentifier}"
       ciProperty: accessSecret
       propertyValue: !value "deploy_UpdateCIPropertyWithSecretValue_Set_AWS_credentials_propertyValue"
     - name: Set AWS Session Token
       type: deploy.UpdateCIPropertyWithSecretValue
       description: Sets the AWS session token (if specified) in the Cloud CI created
         in Digital.ai Deploy Server in the previous step.
-      precondition: "releaseVariables['aws-session-token'] != None and releaseVariables['aws-session-token']\
+      precondition: "releaseVariables['awsSessionToken'] != None and releaseVariables['awsSessionToken']\
         \ != \"\""
       variableMapping:
-        server: "${deploy-server}"
-        propertyValue: "${aws-session-token}"
+        propertyValue: "${awsSessionToken}"
+        server: "${deployServer}"
       capabilities:
       - remote
-      ciID: "Infrastructure/${awscloud-identifier}"
+      ciID: "Infrastructure/${awscloudIdentifier}"
       ciProperty: sessionToken
     - name: Check AWS Connection
       type: deploy.ControlTask
@@ -103,10 +103,10 @@ spec:
         Server.
       owner: admin
       variableMapping:
-        server: "${deploy-server}"
+        server: "${deployServer}"
       capabilities:
       - remote
-      ciId: "Infrastructure/${awscloud-identifier}"
+      ciId: "Infrastructure/${awscloudIdentifier}"
       taskName: checkConnection
       numberOfContinueRetrials: 0
       pollingInterval: 10
@@ -122,16 +122,16 @@ spec:
         Digital.ai Deploy server.
       owner: admin
       variables:
-      - application-name
+      - applicationName
     - name: Create Application
       type: deploy.CreateCI
       description: Creates an application in Digital.ai Deploy server.
       owner: admin
       variableMapping:
-        server: "${deploy-server}"
+        server: "${deployServer}"
       capabilities:
       - remote
-      ciID: "Applications/${application-name}"
+      ciID: "Applications/${applicationName}"
       ciType: udm.Application
       jsonDescriptor: "{}"
     - name: Specify Package Name
@@ -140,17 +140,17 @@ spec:
         be created in Digital.ai Deploy server.
       owner: admin
       variables:
-      - package-name
+      - packageName
     - name: Create Deployment Package
       type: deploy.CreateCI
       description: Creates an Deployment Package in the Digital.ai Deploy Server application
         created in the previous step.
       owner: admin
       variableMapping:
-        server: "${deploy-server}"
+        server: "${deployServer}"
       capabilities:
       - remote
-      ciID: "Applications/${application-name}/${package-name}"
+      ciID: "Applications/${applicationName}/${packageName}"
       ciType: udm.DeploymentPackage
       jsonDescriptor: "{}"
     - name: Specify S3Lambda Parameters
@@ -172,10 +172,10 @@ spec:
         the details given in the previous step.
       owner: admin
       variableMapping:
-        server: "${deploy-server}"
+        server: "${deployServer}"
       capabilities:
       - remote
-      ciID: "Applications/${application-name}/${package-name}/sample-lambda"
+      ciID: "Applications/${applicationName}/${packageName}/sample-lambda"
       ciType: aws.lambda.S3Spec
       jsonDescriptor: |-
         {
@@ -202,13 +202,13 @@ spec:
         parsedDate = datetime.datetime.now()
 
         requestBody = ManagedApplicationView()
-        requestBody.applicationName = "${application-name}"
+        requestBody.applicationName = "${applicationName}"
         requestBody.managedBy = "Digital.ai Deploy"
         requestBody.dateCreated = parsedDate
-        requestBody.environmentTag = "${environment-name}"
-        requestBody.applicationReference = "${application-name}"
+        requestBody.environmentTag = "${environmentName}"
+        requestBody.applicationReference = "${applicationName}"
 
-        connectionServer = ConnectionServerView('${deploy-server}', '', '', '')
+        connectionServer = ConnectionServerView('${deployServer}', '', '', '')
         requestBody.connectionServer = connectionServer
 
         res = managedApplicationApi.addManagedApplication(requestBody)
@@ -221,18 +221,21 @@ spec:
   - Serverless
   variables:
   - type: xlrelease.StringVariable
-    key: environment-name
+    key: environmentName
+    description: Environment CI Name
     value: aws-env
   - type: xlrelease.StringVariable
-    key: awscloud-identifier
+    key: awscloudIdentifier
     showOnReleaseStart: false
     description: Name of the AWS Cloud CI to be created in Digital.ai Deploy server
     value: aws-cloud
   - type: xlrelease.StringVariable
-    key: application-name
+    key: applicationName
+    description: Name of the application CI in Deploy
     value: aws-app
   - type: xlrelease.StringVariable
-    key: package-name
+    key: packageName
+    description: Application package name in Deploy
     value: "1.0"
   - type: xlrelease.StringVariable
     key: functionName
@@ -256,35 +259,38 @@ spec:
     key: handler
     value: handler
   - type: xlrelease.StringVariable
-    key: access-key
+    key: accessKey
     showOnReleaseStart: false
     description: AWS account access key
   - type: xlrelease.ReferenceVariable
-    key: deploy-server
+    key: deployServer
     showOnReleaseStart: false
     label: Deploy Server
+    description: Connection to Deploy Server
     referencedType: digitalai.DeployServer
   - type: xlrelease.PasswordStringVariable
-    key: aws-access-secret
+    key: awsAccessSecret
     showOnReleaseStart: false
     description: AWS account access secret
   - type: xlrelease.PasswordStringVariable
-    key: aws-session-token
+    key: awsSessionToken
     requiresValue: false
     showOnReleaseStart: false
     description: AWS account session token (optional)
   - type: xlrelease.StringVariable
-    key: run-as-user
+    key: runAsUsername
     showOnReleaseStart: false
     label: Run as user
+    description: Run automated tasks as this user
   - type: xlrelease.PasswordStringVariable
-    key: run-as-password
+    key: runAsUserPassword
     showOnReleaseStart: false
     label: Run as password
+    description: Password for Run Automated Tasks As user
   allowPasswordsInAllFields: true
-  scriptUsername: "${run-as-user}"
+  scriptUsername: "${runAsUsername}"
   variableMapping:
-    scriptUserPassword: "${run-as-password}"
+    scriptUserPassword: "${runAsUserPassword}"
   author: Digital.ai
   logo:
     type: xlrelease.TemplateLogo

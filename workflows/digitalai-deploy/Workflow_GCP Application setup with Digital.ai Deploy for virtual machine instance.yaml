@@ -18,8 +18,8 @@ spec:
       description: Specify the Run As user. All automated tasks in the workflow will
         be run as the specified user.
       variables:
-      - run-as-user
-      - run-as-password
+      - runAsUsername
+      - runAsUserPassword
     - name: Specify Deploy Server Details
       type: xlrelease.UserInputTask
       description: Select the Digital.ai Deploy Server Connection onto which the Google
@@ -27,24 +27,24 @@ spec:
         if you have not created one.
       owner: admin
       variables:
-      - deploy-server
+      - deployServer
     - name: Specify Environment Name
       type: xlrelease.UserInputTask
       description: Specify the name of the environment CI to be created in the Digital.ai
         Deploy Server.
       owner: admin
       variables:
-      - environment_identifier
+      - environmentName
     - name: Create Environment
       type: deploy.CreateCI
       description: Creates an environment CI with the given name in the Digital.ai
         Deploy Server.
       owner: admin
       variableMapping:
-        server: "${deploy-server}"
+        server: "${deployServer}"
       capabilities:
       - remote
-      ciID: "Environments/${environment_identifier}"
+      ciID: "Environments/${environmentName}"
       ciType: udm.Environment
       jsonDescriptor: "{}"
     - name: Specify Google Account Parameters
@@ -52,38 +52,39 @@ spec:
       description: Specify the connection details for the Google cloud platform account.
       owner: admin
       variables:
-      - google_account_cloud_name
-      - gcp_project_id
-      - gcp_client_email
-      - gcp_pivate_key
+      - googleAccountCloudName
+      - gcpProjectId
+      - gcpClientEmail
+      - gcpPrivateKey
     - name: Create Google Account Cloud Infra
       type: deploy.CreateCI
       description: Creates an Google Cloud CI in the Digital.ai Deploy Server with
         the details specified in the previous step.
       owner: admin
       variableMapping:
-        server: "${deploy-server}"
+        server: "${deployServer}"
       capabilities:
       - remote
-      ciID: "Infrastructure/${google_account_cloud_name}"
+      ciID: "Infrastructure/${googleAccountCloudName}"
       ciType: google.AccountCloud
       jsonDescriptor: |-
         {
-            "projectId": "${gcp_project_id}",
-            "clientEmail": "${gcp_client_email}"
+            "projectId": "${gcpProjectId}",
+            "clientEmail": "${gcpClientEmail}",
+            "privateKey": ""
         }
       addToEnvironment: true
-      envID: "Environments/${environment_identifier}"
+      envID: "Environments/${environmentName}"
     - name: Set Google Credentials
       type: deploy.UpdateCIPropertyWithSecretValue
       description: Sets the private key information in the previously created Google
         Cloud CI in Digital.ai Deploy server.
       variableMapping:
-        propertyValue: "${gcp_pivate_key}"
-        server: "${deploy-server}"
+        propertyValue: "${gcpPrivateKey}"
+        server: "${deployServer}"
       capabilities:
       - remote
-      ciID: "Infrastructure/${google_account_cloud_name}"
+      ciID: "Infrastructure/${googleAccountCloudName}"
       ciProperty: privateKey
     - name: Check Connection of Google account
       type: deploy.ControlTask
@@ -91,10 +92,10 @@ spec:
         CI in the Digital.ai Deploy server to validate the specified credentials.
       owner: admin
       variableMapping:
-        server: "${deploy-server}"
+        server: "${deployServer}"
       capabilities:
       - remote
-      ciId: "Infrastructure/${google_account_cloud_name}"
+      ciId: "Infrastructure/${googleAccountCloudName}"
       taskName: checkConnection
       numberOfContinueRetrials: 0
       pollingInterval: 10
@@ -109,17 +110,17 @@ spec:
         Deploy server.
       owner: admin
       variables:
-      - application_identifier
+      - applicationName
     - name: Create Application
       type: deploy.CreateCI
       description: Creates an application with the specified name in the Digital.ai
         Deploy server.
       owner: admin
       variableMapping:
-        server: "${deploy-server}"
+        server: "${deployServer}"
       capabilities:
       - remote
-      ciID: "Applications/${application_identifier}"
+      ciID: "Applications/${applicationName}"
       ciType: udm.Application
       jsonDescriptor: "{}"
     - name: Specify Package Name
@@ -128,18 +129,19 @@ spec:
         in Digital.ai Deploy server in the previous step.
       owner: admin
       variables:
-      - application_version
+      - packageName
     - name: Create Deployment Package
       type: deploy.CreateCI
       description: Creates a deployment package with the specfied name in the application
         created in Digital.ai Deploy server.
       owner: admin
       variableMapping:
-        server: "${deploy-server}"
+        server: "${deployServer}"
       capabilities:
       - remote
-      ciID: "Applications/${application_identifier}/${application_version}"
+      ciID: "Applications/${applicationName}/${packageName}"
       ciType: udm.DeploymentPackage
+      jsonDescriptor: "{}"
     - name: Specify Intance Spec Parameters
       type: xlrelease.UserInputTask
       description: Specify the Instance specifications which will be used to create
@@ -150,18 +152,18 @@ spec:
       - machine
       - image_project
       - image
-      - wait_time_for_create
-      - wait_time_for_destroy
+      - waitTimeForCreate
+      - waitTimeForDestroy
     - name: Create Google Instance spec
       type: deploy.CreateCI
       description: Creates the InstanceSpec CI with the specified details in the application
         package created in Digital.ai Deploy server in the previous steps.
       owner: admin
       variableMapping:
-        server: "${deploy-server}"
+        server: "${deployServer}"
       capabilities:
       - remote
-      ciID: "Applications/${application_identifier}/${application_version}/${instance_spec_name}"
+      ciID: "Applications/${applicationName}/${packageName}/${instanceSpecName}"
       ciType: googlecloud.compute.InstanceSpec
       jsonDescriptor: |-
         {
@@ -169,8 +171,8 @@ spec:
             "machine": "${machine}",
             "imageProject": "${image_project}",
             "image": "${image}",
-            "waitOnCreate": "${wait_time_for_create}",
-            "waitOnDestroy": "${wait_time_for_destroy}"
+            "waitOnCreate": "${waitTimeForCreate}",
+            "waitOnDestroy": "${waitTimeForDestroy}"
         }
     - name: Add Managed Application
       type: xlrelease.ScriptTask
@@ -187,13 +189,13 @@ spec:
         parsedDate = datetime.datetime.now()
 
         requestBody = ManagedApplicationView()
-        requestBody.applicationName = "${application_identifier}"
+        requestBody.applicationName = "${applicationName}"
         requestBody.managedBy = "Digital.ai Deploy"
         requestBody.dateCreated = parsedDate
-        requestBody.environmentTag = "${environment_identifier}"
-        requestBody.applicationReference = "${application_identifier}"
+        requestBody.environmentTag = "${environmentName}"
+        requestBody.applicationReference = "${applicationName}"
 
-        connectionServer = ConnectionServerView('${deploy-server}', '', '', '')
+        connectionServer = ConnectionServerView('${deployServer}', '', '', '')
         requestBody.connectionServer = connectionServer
 
         res = managedApplicationApi.addManagedApplication(requestBody)
@@ -205,71 +207,80 @@ spec:
   - Application Life Cycle Management
   variables:
   - type: xlrelease.StringVariable
-    key: environment_identifier
+    key: environmentName
+    description: Name of the environment CI in Deploy
     value: gcp_env
   - type: xlrelease.StringVariable
-    key: google_account_cloud_name
+    key: googleAccountCloudName
     description: Name of Google Cloud CI to be created in Digital.ai Deploy server
     value: google_cloud
   - type: xlrelease.StringVariable
-    key: gcp_project_id
+    key: gcpProjectId
     description: Google Cloud Platform project id
     value: gcp_project_id
   - type: xlrelease.PasswordStringVariable
-    key: gcp_pivate_key
+    key: gcpPrivateKey
     showOnReleaseStart: false
     description: Google Cloud Platform account private key
   - type: xlrelease.StringVariable
-    key: application_identifier
+    key: applicationName
+    description: Name of the application CI in Deploy
     value: gcp_app
   - type: xlrelease.StringVariable
-    key: application_version
-    value: app_version
+    key: packageName
+    description: Name of the applicaiton package in Deploy
+    value: "1.0"
   - type: xlrelease.StringVariable
-    key: instance_spec_name
+    key: instanceSpecName
+    description: Name of the Instance Spec CI in Deploy
     value: gcp_instance_spec_name
   - type: xlrelease.StringVariable
     key: machine
+    description: The Google machine to use
     value: machine
   - type: xlrelease.StringVariable
     key: image_project
+    description: Google Project where the image is stored
     value: image_project
   - type: xlrelease.StringVariable
     key: zone
+    description: Instance creation zone
     value: zone
   - type: xlrelease.StringVariable
     key: image
+    description: Google image to use
     value: image
   - type: xlrelease.StringVariable
-    key: wait_time_for_create
+    key: waitTimeForCreate
+    description: The time to wait for creation in seconds
     value: wait_for_create
   - type: xlrelease.StringVariable
-    key: wait_time_for_destroy
+    key: waitTimeForDestroy
+    description: The time to wait for deletion in seconds
     value: wait_time_for_destroy
   - type: xlrelease.StringVariable
-    key: gcp_client_email
+    key: gcpClientEmail
     description: Google Cloud Platform client email
     value: gcp_client_email
   - type: xlrelease.ReferenceVariable
-    key: deploy-server
+    key: deployServer
     showOnReleaseStart: false
     label: Deploy Server
+    description: Connection to the Deploy server
     referencedType: digitalai.DeployServer
   - type: xlrelease.StringVariable
-    key: application-name
-  - type: xlrelease.StringVariable
-    key: environment-name
-  - type: xlrelease.StringVariable
-    key: run-as-user
+    key: runAsUsername
     showOnReleaseStart: false
     label: Run as user
+    description: Run automated tasks as this user
   - type: xlrelease.PasswordStringVariable
-    key: run-as-password
+    key: runAsUserPassword
     showOnReleaseStart: false
     label: Run as password
-  scriptUsername: "${run-as-user}"
+    description: Password for Run Automated Tasks As user
+  scriptUsername: "${runAsUsername}"
   variableMapping:
-    scriptUserPassword: "${run-as-password}"
+    scriptUserPassword: "${runAsUserPassword}"
   author: Digital.ai
   logo:
     type: xlrelease.TemplateLogo
