@@ -24,18 +24,8 @@ spec:
             description: Specify the Digital.ai Platform server to install Cloud Connector.
             variables:
               - daiPlatformServer
-          - name: Get Release URL
-            type: xlrelease.ScriptTask
-            script: |-
-              from urlparse import urlparse
-              
-              parsed_url = urlparse("${release.url}")
-              url = "{0.scheme}://{0.netloc}".format(parsed_url)
-              
-              releaseVariables['releaseUrl'] = url
           - name: Get available agent runtimes
             type: daiplatform.GetAgentRuntimes
-            filter: "name[search]:remote-runner"
             variableMapping:
               pythonScript.daiPlatformServer: "${daiPlatformServer}"
               pythonScript.output: "${agentRuntimesResponse}"
@@ -86,8 +76,8 @@ spec:
           - name: Get Platform access token
             type: daiplatform.GetToken
             variableMapping:
-              pythonScript.output: "${platformToken}"
               pythonScript.daiPlatformServer: "${daiPlatformServer}"
+              pythonScript.output: "${platformToken}"
           - name: Install the Cloud Connector
             type: xlrelease.Task
             description: |-
@@ -130,6 +120,7 @@ spec:
         showOnReleaseStart: false
         label: Run automated tasks as user
         description: Run all automated tasks in this workflow as user
+        value: admin
       - type: xlrelease.PasswordStringVariable
         key: runAsPassword
         requiresValue: false
@@ -170,7 +161,6 @@ spec:
         requiresValue: false
         showOnReleaseStart: false
         label: Select Agent Runtime to install
-        description: Agent runtimes are filtered by name that contains "remote-runner"
         valueProvider:
           type: xlrelease.ListOfStringValueProviderConfiguration
           variableMapping:
