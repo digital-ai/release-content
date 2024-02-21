@@ -20,7 +20,7 @@ spec:
     - name: Delete Application in ArgoCD
       type: argocd.RemoveApplication
       variableMapping:
-        argoServer: "${argoCDApiServer}"
+        server: "${argoCDApiServer}"
       capabilities:
       - remote
       applicationName: "${Application_name}"
