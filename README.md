@@ -4,7 +4,7 @@
 
 # Digital.ai Release Content Repository
 
-Welcome to the official Digital.ai Release content repository! This repository is dedicated to storing officially published release templates and workflow templates by Digital.ai.
+Welcome to the official Digital.ai Release content repository! This repository is dedicated to storing officially published release templates and workflow templates by Digital.ai
 
 ## Table of Contents
 
