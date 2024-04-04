@@ -28,7 +28,7 @@ spec:
         azureConfiguration: "${azureConnection}"
       capabilities:
       - remote
-      command: "az acr repository list --name ${registryName}"
+      command: "acr repository list --name ${registryName}"
   kind: WORKFLOW
   categories:
   - Infrastructure Service
