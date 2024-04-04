@@ -19,11 +19,11 @@ spec:
     exportDashboards: false
     exportNotifications: false
     versioningStyle: multipleFilesPerCIType
-- directory: Azure
+- directory: azure
   children:
   - type: xlrelease.FolderVersioningSettings
     gitConnection: Digital.ai Official Repository
-    scmPath: workflows/Azure
+    scmPath: workflows/azure
     branch: main
     autoImport: true
     exportTemplates: false
@@ -53,7 +53,7 @@ spec:
   children:
   - type: xlrelease.FolderVersioningSettings
     gitConnection: Digital.ai Official Repository
-    scmPath: workflows/Azure
+    scmPath: workflows/DORA
     branch: main
     autoImport: true
     exportTemplates: false
