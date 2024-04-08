@@ -19,7 +19,7 @@ spec:
     exportDashboards: false
     exportNotifications: false
     versioningStyle: multipleFilesPerCIType
-- directory: azure
+- directory: Azure
   children:
   - type: xlrelease.FolderVersioningSettings
     gitConnection: Digital.ai Official Repository
