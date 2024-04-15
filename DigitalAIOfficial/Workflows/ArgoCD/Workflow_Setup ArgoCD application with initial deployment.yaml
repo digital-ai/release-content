@@ -251,7 +251,8 @@ spec:
       managedBy: "${managedBy}"
       environmentTag: "${environmentTag}"
       applicationReference: "${clusterUrl}"
-      deleteWorkflowId: Applications/FolderDefaultReleaseContent/Folder1fdca40ce6454784bf52fdb663bab766/Folderc0439811391349d8aa4707615cc7b271/Releasea76094b792a349b8a53bc0eca36803c6
+      deleteWorkflowId: "Delete Application in ArgoCD"
+      updateWorkflowId: "Update Application in ArgoCD"
       variableMapping:
         pythonScript.managedApplicationId: "${managedApplicationId}"
         pythonScript.connectionServer: "${argoCDApiServer}"
