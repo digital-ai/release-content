@@ -2,8 +2,8 @@
 apiVersion: xl-release/v1
 kind: Permissions
 metadata:
-  path: Workflows/Remote runner
-  home: Digital.ai - Official/Workflows/Remote runner
+  path: Workflows/Release runner
+  home: Digital.ai - Official/Workflows/Release runner
 spec:
 - directory: "."
   teams:
