@@ -1,7 +1,3 @@
-# Exported from:        http://Mayur-Patel:5516/
-# Release version:      24.1.0
-# Date created:         Mon Apr 15 12:13:28 IST 2024
-
 ---
 apiVersion: xl-release/v1
 kind: Permissions
