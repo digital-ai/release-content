@@ -1,0 +1,11 @@
+# Exported from:        http://Mayur-Patel:5516/
+# Release version:      24.1.0
+# Date created:         Mon Apr 15 12:13:27 IST 2024
+
+---
+apiVersion: xl-release/v1
+kind: Import
+spec:
+  imports:
+  - Permissions.yaml
+  - Workflow_Setup Release Folders and Variables.yaml

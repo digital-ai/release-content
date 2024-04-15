@@ -1,0 +1,15 @@
+# Exported from:        http://Mayur-Patel:5516/
+# Release version:      24.1.0
+# Date created:         Mon Apr 15 12:13:28 IST 2024
+
+---
+apiVersion: xl-release/v1
+kind: Import
+spec:
+  imports:
+  - Permissions.yaml
+  - Workflow_Delete Application in ArgoCD.yaml
+  - Workflow_Install Argo Rollouts.yaml
+  - Workflow_Install ArgoCD.yaml
+  - Workflow_Setup ArgoCD application with initial deployment.yaml
+  - Workflow_Update Application in ArgoCD.yaml
