@@ -58,6 +58,7 @@ spec:
       \ is empty, release/workflow execution folder will be used"
   disableNotifications: true
   author: Digital.ai
+  description: Delete Application in ArgoCD.
   logo:
     type: xlrelease.TemplateLogo
     contentType: image/png
