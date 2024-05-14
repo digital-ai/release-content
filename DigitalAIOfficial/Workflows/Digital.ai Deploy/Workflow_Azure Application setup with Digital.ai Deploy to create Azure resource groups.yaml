@@ -5,8 +5,7 @@ metadata:
   path: Workflows/Digital.ai Deploy
   home: Digital.ai - Official/Workflows/Digital.ai Deploy
 spec:
-- template: Azure Application setup with Digital.ai Deploy to create Azure resource
-    groups
+- template: Azure setup application with Digital.ai Deploy
   description: "Seamlessly create an application in Digital.ai Deploy that can create\
     \ Azure resource groups, including its respective environment and infrastructure\
     \ setup."
