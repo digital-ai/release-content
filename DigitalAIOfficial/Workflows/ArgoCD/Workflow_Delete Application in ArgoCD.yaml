@@ -5,7 +5,7 @@ metadata:
   path: Workflows/ArgoCD
   home: Digital.ai - Official/Workflows/ArgoCD
 spec:
-- template: Delete Application in ArgoCD
+- template: ArgoCD delete application
   scheduledStartDate: 2023-04-27T18:30:00+05:30
   dueDate: 2023-04-27T19:30:00+05:30
   phases:
