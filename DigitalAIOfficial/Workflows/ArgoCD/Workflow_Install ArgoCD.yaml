@@ -5,7 +5,7 @@ metadata:
   path: Workflows/ArgoCD
   home: Digital.ai - Official/Workflows/ArgoCD
 spec:
-- template: Install ArgoCD
+- template: ArgoCD install
   description: Install ArgoCD on Kubernetes cluster for deploying an Application in
     no time.
   scheduledStartDate: 2022-12-07T13:30:00+05:30
