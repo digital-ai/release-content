@@ -5,7 +5,7 @@ metadata:
   path: Workflows/Digital.ai Deploy
   home: Digital.ai - Official/Workflows/Digital.ai Deploy
 spec:
-- template: GCP Application setup with Digital.ai Deploy for virtual machine instance
+- template: GCP setup application with Digital.ai Deploy
   description: "Seamlessly create an application in Digital.ai Deploy that can set\
     \ up virtual machine instances in GCP, including its respective environment and\
     \ infrastructure configuration."
