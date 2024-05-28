@@ -5,7 +5,7 @@ metadata:
   path: Workflows/Terraform
   home: Digital.ai - Official/Workflows/Terraform
 spec:
-- template: "Terraform manage infrastructure"
+- template: Terraform manage infrastructure
   description: "Workflow provides the steps that create, update, or destroy infrastructure\
     \ in the cloud using Terraform."
   scheduledStartDate: 2023-09-15T09:00:00+05:30
