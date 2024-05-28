@@ -168,5 +168,5 @@ spec:
   logo:
     type: xlrelease.TemplateLogo
     contentType: image/png
-    file: !file "template-logo/ce5e2c55c1d65057d9d445256baef6fceef4e644/argo-icon.png"
+    file: !file "template-logo/ce5e2c55c1d65057d9d445256baef6fceef4e644/argocd.png"
   defaultTargetFolder: Digital.ai - Official/Workflow Executions
