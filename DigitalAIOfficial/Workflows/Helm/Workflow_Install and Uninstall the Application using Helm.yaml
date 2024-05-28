@@ -122,5 +122,5 @@ spec:
   logo:
     type: xlrelease.TemplateLogo
     contentType: image/svg+xml
-    file: !file "template-logo/d4ffac29df794cb05e1ddb8ebc53e70b0ae26b6a/release-helm-integration.svg"
+    file: !file "template-logo/d4ffac29df794cb05e1ddb8ebc53e70b0ae26b6a/helm.svg"
   defaultTargetFolder: Digital.ai - Official/Workflow Executions
