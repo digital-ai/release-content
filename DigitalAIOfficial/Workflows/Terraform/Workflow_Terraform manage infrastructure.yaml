@@ -116,5 +116,5 @@ spec:
   logo:
     type: xlrelease.TemplateLogo
     contentType: image/svg+xml
-    file: !file "template-logo/d3c8d925bd5ba7eade886d24807eabedfe646c4c/xlr-terraform-plugin.svg"
+    file: !file "template-logo/d3c8d925bd5ba7eade886d24807eabedfe646c4c/terraform.svg"
   defaultTargetFolder: Digital.ai - Official/Workflow Executions
