@@ -5,7 +5,7 @@ metadata:
   path: Workflows/Helm
   home: Digital.ai - Official/Workflows/Helm
 spec:
-- template: Install and Uninstall the Application using Helm
+- template: Helm install and uninstall
   description: The workflow provides the steps that install and uninstall the application
     using Helm.
   scheduledStartDate: 2024-02-23T09:00:00+05:30
