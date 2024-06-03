@@ -5,7 +5,7 @@ metadata:
   path: Workflows/Release runner
   home: Digital.ai - Official/Workflows/Release runner
 spec:
-  - template: Install Digital.ai Release runner with Digital.ai Cloud Connector
+  - template: Digital.ai Release runner install with Digital.ai Cloud Connector
     description: Install the Digital.ai Release runner with an embedded Kubernetes cluster
       using the Digital.ai Cloud Connector. You need a Digital.ai account for this option.
     scheduledStartDate: 2024-02-19T09:00:00+01:00
