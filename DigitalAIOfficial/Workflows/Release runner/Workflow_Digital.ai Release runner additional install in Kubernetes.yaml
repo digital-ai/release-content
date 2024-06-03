@@ -5,7 +5,7 @@ metadata:
   path: Workflows/Release runner
   home: Digital.ai - Official/Workflows/Release runner
 spec:
-  - template: Install additional Digital.ai Release runner in Kubernetes
+  - template: Digital.ai Release runner additional install in Kubernetes
     description: Install an additional Digital.ai Release Runner in a Kubernetes cluster.
       You need a Digital.ai Release Kubernetes container plugin for this option.
     scheduledStartDate: 2023-12-22T09:00:00+01:00
