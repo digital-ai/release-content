@@ -5,7 +5,7 @@ metadata:
   path: Workflows/Release runner
   home: Digital.ai - Official/Workflows/Release runner
 spec:
-  - template: Install Digital.ai Release runner in Kubernetes
+  - template: Digital.ai Release runner install in Kubernetes
     description: Install a Digital.ai Release runner into an existing Kubernetes cluster
       using the `xl` client.
     scheduledStartDate: 2023-12-22T09:00:00+01:00
