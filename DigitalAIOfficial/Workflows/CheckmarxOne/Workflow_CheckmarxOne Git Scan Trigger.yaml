@@ -6,35 +6,40 @@ metadata:
   home: Digital.ai - Official/Workflows/CheckmarxOne
 spec:
   - template: "CheckmarxOne: Git Scan Trigger"
+    description: "CheckmarxOne Git Scan task triggers a scan that performs SAST & SCA\
+    \ directly on the code within your Git repository, analyzing it for potential\
+    \ security flaws and vulnerabilities."
     scheduledStartDate: 2024-08-30T09:00:00+05:30
+    dueDate: 2024-08-30T10:00:00+05:30
     phases:
-      - phase: Git Scan Trigger
+      - phase: Trigger Git Scan
         tasks:
           - name: Server Configuration
             type: xlrelease.UserInputTask
-            description: Server Configuration for CheckmarxOne
+            description: Select the CheckmarxOne Connection or create a new connection if
+              you have not created one.
             variables:
               - checkmarxOneServer
           - name: Repository Configuration
             type: xlrelease.UserInputTask
-            description: Git Repository Configuration
+            description: Specify the Git Repository to be scanned.
             variables:
               - gitUrl
               - branch
               - gitUsername
               - gitPassword
               - gitToken
-          - name: Git Scan Configuration
+          - name: Scan Configuration
             type: xlrelease.UserInputTask
-            description: Git Scan Trigger Configuration
+            description: Configure CheckmarxOne Scan.
             variables:
               - startSASTScan
               - startSCAScan
               - skipSubModule
-              - timeThreshold
-              - scan_tags
-              - project_tags
-          - name: Git Scan Trigger
+              - waitInterval
+              - scanTags
+              - projectTags
+          - name: Trigger Scan
             type: checkmarxOne.gitScan
             sastPreset: "${preset}"
             gitUrl: "${gitUrl}"
@@ -45,13 +50,13 @@ spec:
             variableMapping:
               pythonScript.startSCAScan: "${startSCAScan}"
               pythonScript.scanId: "${scanId}"
+              pythonScript.project_tags: "${projectTags}"
+              pythonScript.timeThreshold: "${waitInterval}"
               pythonScript.token: "${gitToken}"
+              pythonScript.scan_tags: "${scanTags}"
               pythonScript.password: "${gitPassword}"
               pythonScript.checkmarxOneServer: "${checkmarxOneServer}"
               pythonScript.skipSubModule: "${skipSubModule}"
-              pythonScript.project_tags: "${project_tags}"
-              pythonScript.scan_tags: "${scan_tags}"
-              pythonScript.timeThreshold: "${timeThreshold}"
               pythonScript.startSASTScan: "${startSASTScan}"
         color: '#3d6c9e'
     kind: WORKFLOW
@@ -62,7 +67,7 @@ spec:
         key: checkmarxOneServer
         showOnReleaseStart: false
         label: "CheckmarxOne: Server"
-        description: "CheckmarxOne: Server"
+        description: "CheckmarxOne: Server Connection"
         referencedType: checkmarxOne.Server
       - type: xlrelease.StringVariable
         key: gitUrl
@@ -113,19 +118,19 @@ spec:
         label: Skip Submodule
         description: Indicates whether to skip the Git submodules
       - type: xlrelease.IntegerVariable
-        key: timeThreshold
+        key: waitInterval
         showOnReleaseStart: false
-        label: Time Threshold
-        description: Scan timeout in minutes
+        label: Wait Interval
+        description: Time interval in between status checks.
         value: 30
       - type: xlrelease.MapStringStringVariable
-        key: scan_tags
+        key: scanTags
         requiresValue: false
         showOnReleaseStart: false
         label: Scan Tags
         description: A list of the key-value tags associated with the scan
       - type: xlrelease.MapStringStringVariable
-        key: project_tags
+        key: projectTags
         requiresValue: false
         showOnReleaseStart: false
         label: Project Tags
