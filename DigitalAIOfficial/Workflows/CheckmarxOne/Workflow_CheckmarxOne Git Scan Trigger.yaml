@@ -2,6 +2,7 @@
 apiVersion: xl-release/v1
 kind: Templates
 metadata:
+  path: Workflows/CheckmarxOne
   home: Digital.ai - Official/Workflows/CheckmarxOne
 spec:
   - template: "CheckmarxOne: Git Scan Trigger"
