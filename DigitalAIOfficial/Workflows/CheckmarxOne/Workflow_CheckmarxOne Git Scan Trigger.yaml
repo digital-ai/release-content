@@ -45,7 +45,7 @@ spec:
             gitUrl: "${gitUrl}"
             branch: "${branch}"
             username: "${gitUsername}"
-            description: Triggers a scan on the Checkmarx server for your project from a
+            description: Triggers a scan on the CheckmarxOne server for your project from a
               specified Git repository.
             variableMapping:
               pythonScript.startSCAScan: "${startSCAScan}"
