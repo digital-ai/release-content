@@ -5,8 +5,8 @@ metadata:
   path: Workflows/CheckmarxOne
   home: Digital.ai - Official/Workflows/CheckmarxOne
 spec:
-  - template: "CheckmarxOne: Git Scan Trigger"
-    description: "CheckmarxOne Git Scan task triggers a scan that performs SAST & SCA\
+  - template: "CheckmarxOne: Scan Git Repository"
+    description: "CheckmarxOne Scan Git Repository triggers a scan that performs SAST & SCA\
     \ directly on the code within your Git repository, analyzing it for potential\
     \ security flaws and vulnerabilities."
     scheduledStartDate: 2024-08-30T09:00:00+05:30
@@ -45,8 +45,7 @@ spec:
             gitUrl: "${gitUrl}"
             branch: "${branch}"
             username: "${gitUsername}"
-            description: Triggers a scan on the CheckmarxOne server for your project from a
-              specified Git repository.
+            description: Triggers a scan on the specified Git repository.
             variableMapping:
               pythonScript.startSCAScan: "${startSCAScan}"
               pythonScript.scanId: "${scanId}"
@@ -102,21 +101,21 @@ spec:
         requiresValue: false
         showOnReleaseStart: false
         label: SAST Scan
-        description: Indicates whether to start the SAST scan
+        description: Indicates whether to run SAST scan.
         value: true
       - type: xlrelease.BooleanVariable
         key: startSCAScan
         requiresValue: false
         showOnReleaseStart: false
         label: SCA Scan
-        description: Indicates whether to start the SCA scan
+        description: Indicates whether to run SCA scan.
         value: true
       - type: xlrelease.BooleanVariable
         key: skipSubModule
         requiresValue: false
         showOnReleaseStart: false
         label: Skip Submodule
-        description: Indicates whether to skip the Git submodules
+        description: Indicates whether to skip Git submodules.
       - type: xlrelease.IntegerVariable
         key: waitInterval
         showOnReleaseStart: false
