@@ -34,6 +34,8 @@ spec:
         tasks:
           - name: Setup deployment provider
             type: xlrelease.ScriptTask
+            description: Creates required configuration items in Release for connection
+              to deployment provider.
             script: |-
               from com.xebialabs.xlrelease.api.v1.forms import DeploymentProviderSetup
               
@@ -47,8 +49,9 @@ spec:
               releaseVariables['statusWebhookEventSourceId'] = statusWebhookEventSourceId
           - name: Autoconfigure deployment provider
             type: xlrelease.ScriptTask
+            description: Generates Deploy CIs required to enable live event notifications.
             script: |-
-              autoConfigResponse = deploymentProviderApi.autoconfigureDeploymentProvider("${eventSource}")
+              autoConfigResponse = deploymentProviderApi.autoconfigureDeploymentProvider("${statusWebhookEventSourceId}")
               
               releaseVariables['autoconfigMessage'] = autoConfigResponse.message
               releaseVariables['autoconfigUrl'] = autoConfigResponse.url
@@ -71,26 +74,12 @@ spec:
         key: statusWebhookEventSourceId
         requiresValue: false
         showOnReleaseStart: false
-      - type: xlrelease.StringVariable
+      - type: xlrelease.ReferenceVariable
         key: server
         requiresValue: false
         showOnReleaseStart: false
         label: Deploy server
-      - type: xlrelease.ReferenceVariable
-        key: connections
-        showOnReleaseStart: false
-        label: Connections
         referencedType: digitalai.DeployServer
-      - type: xlrelease.ListStringVariable
-        key: list
-        requiresValue: false
-        showOnReleaseStart: false
-        label: List
-      - type: xlrelease.StringVariable
-        key: eventSource
-        requiresValue: false
-        showOnReleaseStart: false
-        label: EventSourceId
       - type: xlrelease.StringVariable
         key: autoconfigMessage
         requiresValue: false
