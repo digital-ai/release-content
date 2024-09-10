@@ -8,4 +8,5 @@ spec:
   - Workflow_ArgoCD install.yaml
   - Workflow_ArgoCD setup application.yaml
   - Workflow_ArgoCD update application.yaml
-  - Workflow_ArgoCD create new deployment provider configs.yaml
+  - Workflow_ArgoCD setup deployment provider.yaml
+  - Workflow_ArgoCD setup live deployment configuration.yaml
