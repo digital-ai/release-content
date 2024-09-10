@@ -7,7 +7,7 @@ metadata:
 spec:
   - template: "CheckmarxOne scan Git repository"
     description: "Triggers a CheckmarxOne scan on Git repository,\
-    \ performing SAST and SCA to detect security flawas dn vulnerabilities in the code.\
+    \ performing SAST and SCA to detect security flaws and vulnerabilities in the code.\
     scheduledStartDate: 2024-08-30T09:00:00+05:30
     dueDate: 2024-08-30T10:00:00+05:30
     phases:
