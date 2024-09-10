@@ -45,7 +45,7 @@ spec:
             gitUrl: "${gitUrl}"
             branch: "${branch}"
             username: "${gitUsername}"
-            description: Triggers a scan on the specified Git repository.
+            description: Initiates a scan on the specified Git repository.
             variableMapping:
               pythonScript.startSCAScan: "${startSCAScan}"
               pythonScript.scanId: "${scanId}"
