@@ -4,7 +4,7 @@ kind: Templates
 metadata:
   home: Digital.ai - Official/Workflows/ArgoCD
 spec:
-- template: Setup ArgoCD live deployment configuration
+- template: ArgoCD setup live deployment configuration
   description: "Create or update ArgoCD live deployment configuration"
   phases:
   - phase: Input
@@ -138,5 +138,5 @@ spec:
   logo:
     type: xlrelease.TemplateLogo
     contentType: image/png
-    file: !file "template-logo/d0b08f91372be0b47a2e02d0e536bc0a2c158f0b/argocd.svg"
+    file: !file "template-logo/c9e27d5b1d5ed9738d58781439732acacd6b482d/argocd.svg"
   defaultTargetFolder: Digital.ai - Official/Workflow Executions

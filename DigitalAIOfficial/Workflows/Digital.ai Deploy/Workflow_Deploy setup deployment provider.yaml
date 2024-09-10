@@ -4,7 +4,7 @@ kind: Templates
 metadata:
   home: Digital.ai - Official/Workflows/Digital.ai Deploy
 spec:
-  - template: Setup Deploy deployment provider
+  - template: Deploy setup deployment provider
     description: Create required connections for Deploy deployment provider
     scheduledStartDate: 2024-08-28T09:00:00+02:00
     dueDate: 2024-08-28T10:00:00+02:00
@@ -111,5 +111,5 @@ spec:
     logo:
       type: xlrelease.TemplateLogo
       contentType: image/svg+xml
-      file: !file "template-logo/16522bac6e7b33679818c4741e4d8b8eea639680/deploy.svg"
+      file: !file "template-logo/97662a62108c2b1e1875c8e18f6d1c72a013d33c/deploy.svg"
     defaultTargetFolder: Digital.ai - Official/Workflow Executions

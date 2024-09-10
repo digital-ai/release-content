@@ -4,7 +4,7 @@ kind: Templates
 metadata:
   home: Digital.ai - Official/Workflows/Digital.ai Deploy
 spec:
-- template: Setup Deploy live deployment configuration
+- template: Deploy setup live deployment configuration
   description: "Create or update Deploy live deployment configuration"
   phases:
   - phase: Input
@@ -162,5 +162,5 @@ spec:
   logo:
     type: xlrelease.TemplateLogo
     contentType: image/svg+xml
-    file: !file "template-logo/1acf43f120046fcbeca6ce60329683dc10bb741d/deploy.svg"
+    file: !file "template-logo/97662a62108c2b1e1875c8e18f6d1c72a013d33c/deploy.svg"
   defaultTargetFolder: Digital.ai - Official/Workflow Executions

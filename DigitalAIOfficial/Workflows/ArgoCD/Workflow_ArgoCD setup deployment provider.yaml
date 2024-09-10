@@ -4,7 +4,7 @@ kind: Templates
 metadata:
   home: Digital.ai - Official/Workflows/ArgoCD
 spec:
-  - template: Setup ArgoCD deployment provider
+  - template: ArgoCD setup deployment provider
     description: Create required connections for ArgoCD deployment provider
     scheduledStartDate: 2024-08-28T09:00:00+02:00
     dueDate: 2024-08-28T10:00:00+02:00
@@ -104,5 +104,5 @@ spec:
     logo:
       type: xlrelease.TemplateLogo
       contentType: image/svg+xml
-      file: !file "template-logo/a3175dad2e24c9ec6103e96176fe39b6e76f7c06/argocd.svg"
+      file: !file "template-logo/c9e27d5b1d5ed9738d58781439732acacd6b482d/argocd.svg"
     defaultTargetFolder: Digital.ai - Official/Workflow Executions

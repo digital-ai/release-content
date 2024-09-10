@@ -1,0 +1,77 @@
+---
+apiVersion: xl-release/v1
+kind: Templates
+metadata:
+  home: Digital.ai - Official/Workflows/ArgoCD
+spec:
+  - template: ArgoCD delete live deployment configuration
+    description: Delete ArgoCD live deployment configuration
+    scheduledStartDate: 2024-09-10T12:33:53.874+02:00
+    dueDate: 2024-09-10T13:33:53.874+02:00
+    phases:
+      - phase: Delete live deployment config
+        tasks:
+          - name: Check if remote runner exists
+            type: xlrelease.ScriptTask
+            description: Checks if an enabled remote runner is present in the system.
+            script: |-
+              def check_runners(runners):
+                for runner in runners:
+                  if runner["enabled"] and "remote" in runner["capabilities"]:
+                    return True
+                return False
+              
+              runners = configurationApi.searchByTypeAndTitle("xlrelease.JobRunner", "")
+              
+              if not check_runners(runners):
+                raise Exception("There is no job runner with 'remote' capability enabled")
+          - name: Delete live deployment configuration
+            type: xlrelease.ScriptTask
+            description: Deletes deployment configuration from event source and from system.
+            script: |-
+              from com.xebialabs.xlrelease.domain import Configuration
+              from com.xebialabs.deployit.plugin.api.reflect import Type
+              
+              statusWebhookEventSource = configurationApi.getConfiguration("${statusWebhookEventSourceId}")
+              liveDeploymentConfigs = statusWebhookEventSource.getProperty("liveDeploymentConfigs")
+              
+              configToDelete = None
+              liveDeploymentConfigs = set()
+              for config in statusWebhookEventSource.getProperty("liveDeploymentConfigs"):
+                if config.id == "${liveDeploymentConfigurationId}":
+                    configToDelete = config.id
+                else:
+                    liveDeploymentConfigs.add(config)
+              
+              if configToDelete:
+                statusWebhookEventSource.setProperty("liveDeploymentConfigs", liveDeploymentConfigs)
+                configurationApi.updateConfiguration("${statusWebhookEventSourceId}", statusWebhookEventSource)
+                configurationApi.deleteConfiguration(configToDelete)
+          - name: Patch ArgoCD applications
+            type: xlrelease.ScriptTask
+            description: |-
+              Patches ArgoCD applications by running a container script, adding the necessary annotation to enable live event notifications.
+              
+              The following annotation is applied to all apps matching the specified filter:
+              `notifications.argoproj.io/subscribe.on-app-status-changed.release-webhook`
+            script: "deploymentProviderApi.patchDeploymentProvider(\"${statusWebhookEventSourceId}\"\
+        )"
+        color: "#3d6c9e"
+    kind: WORKFLOW
+    tags:
+      - Remote ArgoCD
+      - deployment provider
+      - delete
+    variables:
+      - type: xlrelease.StringVariable
+        key: statusWebhookEventSourceId
+      - type: xlrelease.StringVariable
+        key: liveDeploymentConfigurationId
+        requiresValue: false
+    disableNotifications: true
+    author: Digital.ai
+    logo:
+      type: xlrelease.TemplateLogo
+      contentType: image/png
+      file: !file "template-logo/c9e27d5b1d5ed9738d58781439732acacd6b482d/argocd.svg"
+    defaultTargetFolder: Digital.ai - Official/Workflow Executions

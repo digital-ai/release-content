@@ -10,3 +10,4 @@ spec:
   - Workflow_ArgoCD update application.yaml
   - Workflow_ArgoCD setup deployment provider.yaml
   - Workflow_ArgoCD setup live deployment configuration.yaml
+  - Workflow_ArgoCD delete live deployment configuration.yaml
