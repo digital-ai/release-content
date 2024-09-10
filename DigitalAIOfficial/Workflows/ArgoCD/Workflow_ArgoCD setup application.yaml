@@ -1,3 +1,7 @@
+# Exported from:        http://user-ThinkPad-X1-Extreme-Gen-3:5516/
+# Release version:      24.1.0
+# Date created:         Tue Sep 10 16:07:45 CEST 2024
+
 ---
 apiVersion: xl-release/v1
 kind: Templates
@@ -244,11 +248,12 @@ spec:
         tasks:
           - name: Live deployment configuration input
             type: xlrelease.UserInputTask
-            description: Please enter the required information below.
+            description: Enter desired name for your application configuration.
             variables:
               - liveDeploymentConfigurationName
-          - name: Create live deployment
+          - name: Create live deployment configuration
             type: xlrelease.ScriptTask
+            description: Creates configuration item to follow created application.
             script: |-
               from com.xebialabs.xlrelease.domain import Configuration
               from com.xebialabs.deployit.plugin.api.reflect import Type
@@ -262,11 +267,13 @@ spec:
               liveDeploymentConfiguration = configurationApi.addConfiguration(liveDeploymentConfiguration)
               
               releaseVariables['liveDeploymentConfigurationId'] = liveDeploymentConfiguration.getId()
-          - name: Configure deployment provider
+          - name: Setup deployment provider
             type: xlrelease.ScriptTask
+            description: Creates required configuration items in Release for connection
+              to deployment provider.
             script: |-
               from com.xebialabs.xlrelease.api.v1.forms import DeploymentProviderSetup
-  
+              
               folderId = getCurrentFolder().getId()
               configId = releaseVariables['liveDeploymentConfigurationId']
               serverId = releaseVariables['argoCDApiServer']
@@ -278,21 +285,22 @@ spec:
               releaseVariables['statusWebhookEventSourceId'] = statusWebhookEventSourceId
           - name: Autoconfigure deployment provider
             type: xlrelease.ScriptTask
+            description: Generates ArgoCD config map required to enable live event notifications.
             script: |-
               autoConfigResponse = deploymentProviderApi.autoconfigureDeploymentProvider("${statusWebhookEventSourceId}")
               
-              releaseVariables['autoConfigMessage'] = autoConfigResponse.message
-              releaseVariables['autoConfigUrl'] = autoConfigResponse.url
-              releaseVariables['autoConfigDetails'] = autoConfigResponse.details
+              releaseVariables['autoconfigMessage'] = autoConfigResponse.message
+              releaseVariables['autoconfigUrl'] = autoConfigResponse.url
+              releaseVariables['autoconfigDetails'] = autoConfigResponse.details
           - name: Autoconfig response
             type: xlrelease.Task
             description: |-
-              ${autoConfigMessage}
+              ${autoconfigMessage}
               
               [docs](${autoconfigUrl})
               
               ```
-              ${autoConfigDetails}
+              ${autoconfigDetails}
               ```
         color: "#3d6c9e"
     kind: WORKFLOW
@@ -575,23 +583,17 @@ spec:
         label: Status webhook event source id
         description: Id of the status webhook event
       - type: xlrelease.StringVariable
-        key: autoConfigDetails
+        key: autoconfigDetails
         requiresValue: false
         showOnReleaseStart: false
-        label: Description
-        description: The description of the item.
       - type: xlrelease.StringVariable
-        key: autoConfigMessage
+        key: autoconfigMessage
         requiresValue: false
         showOnReleaseStart: false
-        label: Description
-        description: The description of the item.
       - type: xlrelease.StringVariable
-        key: autoConfigUrl
+        key: autoconfigUrl
         requiresValue: false
         showOnReleaseStart: false
-        label: Description
-        description: The description of the item.
     disableNotifications: true
     author: Digital.ai
     logo:
