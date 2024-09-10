@@ -41,22 +41,22 @@ spec:
           - name: Trigger Scan
             type: checkmarxOne.gitScan
             sastPreset: "${preset}"
-                   gitUrl: "${gitUrl}"
-                   branch: "${branch}"
-                   username: "${gitUsername}"
-                   description: Initiates a scan on the specified Git repository.
-                   variableMapping:
-                     pythonScript.startSCAScan: "${startSCAScan}"
-                     pythonScript.scanId: "${scanId}"
-                     pythonScript.project_tags: "${projectTags}"
-                     pythonScript.timeThreshold: "${waitInterval}"
-                     pythonScript.token: "${gitToken}"
-                     pythonScript.scan_tags: "${scanTags}"
-                     pythonScript.password: "${gitPassword}"
-                     pythonScript.checkmarxOneServer: "${checkmarxOneServer}"
-                     pythonScript.skipSubModule: "${skipSubModule}"
-                     pythonScript.startSASTScan: "${startSASTScan}"
-                   color: '#3d6c9e'
+            gitUrl: "${gitUrl}"
+            branch: "${branch}"
+            username: "${gitUsername}"
+            description: Initiates a scan on the specified Git repository.
+            variableMapping:
+              pythonScript.startSCAScan: "${startSCAScan}"
+              pythonScript.scanId: "${scanId}"
+              pythonScript.project_tags: "${projectTags}"
+              pythonScript.timeThreshold: "${waitInterval}"
+              pythonScript.token: "${gitToken}"
+              pythonScript.scan_tags: "${scanTags}"
+              pythonScript.password: "${gitPassword}"
+              pythonScript.checkmarxOneServer: "${checkmarxOneServer}"
+              pythonScript.skipSubModule: "${skipSubModule}"
+              pythonScript.startSASTScan: "${startSASTScan}"
+        color: '#3d6c9e'
     kind: WORKFLOW
     categories:
       - Application Life Cycle Management
