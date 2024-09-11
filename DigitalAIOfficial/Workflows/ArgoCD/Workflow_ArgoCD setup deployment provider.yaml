@@ -72,6 +72,7 @@ spec:
         color: "#3d6c9e"
     kind: WORKFLOW
     categories:
+      - Application onboarding
       - Create Deployment Provider
     variables:
       - type: xlrelease.StringVariable

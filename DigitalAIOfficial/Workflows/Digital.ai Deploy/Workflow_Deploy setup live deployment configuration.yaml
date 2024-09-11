@@ -108,6 +108,8 @@ spec:
         [View in Deploy](${autoconfigUrl})
     color: '#3d6c9e'
   kind: WORKFLOW
+  categories:
+    - Application onboarding
   tags:
     - Remote Deploy
     - deployment provider
