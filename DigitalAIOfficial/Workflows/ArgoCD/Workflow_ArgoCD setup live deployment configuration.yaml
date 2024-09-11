@@ -82,8 +82,6 @@ spec:
           liveDeploymentConfiguration = configurationApi.addConfiguration(liveDeploymentConfiguration)
 
           liveDeploymentConfigs = statusWebhookEventSource.getProperty("liveDeploymentConfigs")
-          if liveDeploymentConfigs is None:
-              liveDeploymentConfigs = []
           liveDeploymentConfigs.add(liveDeploymentConfiguration)
 
           statusWebhookEventSource.setProperty("liveDeploymentConfigs", liveDeploymentConfigs)

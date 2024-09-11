@@ -60,17 +60,16 @@ spec:
               applicationToDelete = "${applicationName}"
               
               configToDelete = None
-              updatedConfigs = set()
               for config in liveDeploymentConfigs:
                   if config.getProperty("application") == applicationToDelete:
-                      configToDelete = config.id
-                  else:
-                      updatedConfigs.add(config)
+                      configToDelete = config
+                      break
               
               if configToDelete:
-                  statusWebhookEventSource.setProperty("liveDeploymentConfigs", updatedConfigs)
+                  liveDeploymentConfigs.remove(configToDelete)
+                  statusWebhookEventSource.setProperty("liveDeploymentConfigs", liveDeploymentConfigs)
                   configurationApi.updateConfiguration("${statusWebhookEventSourceId}", statusWebhookEventSource)
-                  configurationApi.deleteConfiguration(configToDelete)
+                  configurationApi.deleteConfiguration(configToDelete.id)
         color: "#3d6c9e"
     kind: WORKFLOW
     tags:
