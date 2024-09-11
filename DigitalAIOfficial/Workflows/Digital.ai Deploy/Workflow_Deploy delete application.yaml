@@ -1,0 +1,131 @@
+---
+apiVersion: xl-release/v1
+kind: Templates
+metadata:
+  home: Digital.ai - Official/Workflows/Digital.ai Deploy
+spec:
+  - template: Deploy delete application
+    scheduledStartDate: 2023-04-27T15:00:00+02:00
+    dueDate: 2023-04-27T16:00:00+02:00
+    phases:
+      - phase: Delete Application in Deploy
+        tasks:
+          - name: Check if remote runner exists
+            type: xlrelease.ScriptTask
+            script: |-
+              def check_runners(runners):
+                for runner in runners:
+                  if runner["enabled"] and "remote" in runner["capabilities"]:
+                    return True
+                return False
+              
+              runners = configurationApi.searchByTypeAndTitle("xlrelease.JobRunner", "")
+              
+              if not check_runners(runners):
+                raise Exception("There is no job runner with 'remote' capability enabled")
+          - name: Fetch details
+            type: xlrelease.ScriptTask
+            script: |-
+              from com.xebialabs.xlrelease.domain.environments import LiveDeployment
+              
+              liveDeployment = deploymentProviderApi.getLiveDeployment("${liveDeploymentId}")
+              statusWebhookEventSource = configurationApi.getConfiguration(liveDeployment.eventSourceId)
+              
+              applicationName = liveDeployment.getApplication().getTitle()
+              environmentName = liveDeployment.getEnvironment().getTitle()
+              environmentPath = liveDeployment.getEnvironment().getDeploymentTarget().getProperty("environmentPath")
+              environmentCiId = environmentPath.split("ciId=")[-1] if "ciId=" in environmentPath else ""
+              
+              releaseVariables['statusWebhookEventSourceId'] = statusWebhookEventSource.id
+              releaseVariables['deployedApplication'] = environmentCiId + "/" + applicationName
+              releaseVariables['applicationName'] = applicationName
+              releaseVariables['environmentName'] = environmentName
+              releaseVariables['server'] = statusWebhookEventSource["sourceServer"].id
+          - name: Application Details
+            type: xlrelease.UserInputTask
+            description: Please enter the required information for application you want
+              to delete.
+            variables:
+              - server
+              - deployedApplication
+          - name: Undeploy Application in Deploy
+            type: deploy.Undeploy
+            variableMapping:
+              server: "${server}"
+            capabilities:
+              - remote
+            deployedApplication: "${deployedApplication}"
+            numberOfContinueRetrials: 0
+            pollingInterval: 10
+            numberOfPollingTrials: 0
+            displayStepLogs: true
+            connectionRetries: 10
+          - name: Delete deployment configuration
+            type: xlrelease.ScriptTask
+            description: Deletes deployment configuration from event source if it matches
+              the deleted application.
+            script: |-
+              statusWebhookEventSource = configurationApi.getConfiguration("${statusWebhookEventSourceId}")
+              liveDeploymentConfigs = statusWebhookEventSource.getProperty("liveDeploymentConfigs")
+              
+              applicationName = "${applicationName}"
+              environmentName = "${applicationName}"
+              
+              configToDelete = None
+              for config in liveDeploymentConfigs:
+                  if config.getProperty("application") == applicationName and config.getProperty("environment") == environmentName:
+                      configToDelete = config
+                      break
+              
+              if configToDelete:
+                  liveDeploymentConfigs.remove(configToDelete)
+                  statusWebhookEventSource.setProperty("liveDeploymentConfigs", liveDeploymentConfigs)
+                  configurationApi.updateConfiguration("${statusWebhookEventSourceId}", statusWebhookEventSource)
+                  configurationApi.deleteConfiguration(configToDelete.id)
+        color: "#3d6c9e"
+    kind: WORKFLOW
+    tags:
+      - Remote Deploy
+      - application
+      - delete
+    categories:
+      - Application onboarding
+    variables:
+      - type: xlrelease.StringVariable
+        key: liveDeploymentId
+        requiresValue: false
+        showOnReleaseStart: false
+      - type: xlrelease.StringVariable
+        key: statusWebhookEventSourceId
+        requiresValue: false
+        showOnReleaseStart: false
+      - type: xlrelease.StringVariable
+        key: deployedApplication
+        requiresValue: false
+        showOnReleaseStart: false
+        label: Deployed Application
+        description: "Full name of the deployed application, e.g. Environments/ProdEnv/PetClinic"
+      - type: xlrelease.ReferenceVariable
+        key: server
+        requiresValue: false
+        showOnReleaseStart: false
+        label: Deploy server
+        description: Deploy server connection details
+        referencedType: digitalai.DeployServer
+      - type: xlrelease.StringVariable
+        key: applicationName
+        requiresValue: false
+        showOnReleaseStart: false
+        label: Application Name
+      - type: xlrelease.StringVariable
+        key: environmentName
+        requiresValue: false
+        showOnReleaseStart: false
+        label: Environment Name
+    disableNotifications: true
+    author: Digital.ai
+    logo:
+      type: xlrelease.TemplateLogo
+      contentType: image/png
+      file: !file "template-logo/97662a62108c2b1e1875c8e18f6d1c72a013d33c/deploy.svg"
+    defaultTargetFolder: Digital.ai - Official/Workflow Executions
