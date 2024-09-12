@@ -152,18 +152,64 @@ spec:
             "location":"${resourcegroupLocation}",
             "resourceGroupName":"${resourcegroupName}"
         }
-    - name: Add managed application
-      type: managedApplications.CreateApplication
-      applicationName: "${applicationName}"
-      managedBy: Digital.ai Deploy
-      environmentTag: "${environmentName}"
-      applicationReference: "${applicationName}"
-      description: Adds the created Azure Resource Group application to the Digital.ai
-        Release managed application list.
-      variableMapping:
-        pythonScript.connectionServer: "${deployServer}"
-        pythonScript.managedApplicationId: "${managedApplicationId}"
     color: '#3d6c9e'
+  - phase: Autoconfigure Release
+    tasks:
+    - name: Live deployment configuration input
+      type: xlrelease.UserInputTask
+      description: Enter desired name for your application configuration.
+      variables:
+        - liveDeploymentConfigurationName
+    - name: Create live deployment configuration
+      type: xlrelease.ScriptTask
+      description: Creates configuration item to follow onboarded application.
+      script: |-
+        from com.xebialabs.xlrelease.domain import Configuration
+        from com.xebialabs.deployit.plugin.api.reflect import Type
+        
+        liveDeploymentConfiguration = Configuration()
+        liveDeploymentConfiguration.type = Type.valueOf("deploy.DeploymentConfig")
+        liveDeploymentConfiguration.title = "${liveDeploymentConfigurationName}"
+        liveDeploymentConfiguration.folderId = getCurrentFolder().getId()
+        liveDeploymentConfiguration.setProperty("application", "Applications/${applicationName}")
+        liveDeploymentConfiguration.setProperty("environment", "Environments/${environmentName}")
+        
+        liveDeploymentConfiguration = configurationApi.addConfiguration(liveDeploymentConfiguration)
+        
+        releaseVariables['liveDeploymentConfigurationId'] = liveDeploymentConfiguration.getId()
+    - name: Setup deployment provider
+      type: xlrelease.ScriptTask
+      description: Creates required configuration items in Release for connection
+        to deployment provider.
+      script: |-
+        from com.xebialabs.xlrelease.api.v1.forms import DeploymentProviderSetup
+        
+        folderId = getCurrentFolder().getId()
+        configId = releaseVariables['liveDeploymentConfigurationId']
+        serverId = releaseVariables['deployServer']
+        
+        deploymentProviderSetup = DeploymentProviderSetup(folderId, serverId, configId)
+        
+        statusWebhookEventSourceId = deploymentProviderApi.setupDeploymentProvider(deploymentProviderSetup)
+        
+        releaseVariables['statusWebhookEventSourceId'] = statusWebhookEventSourceId
+    - name: Autoconfigure deployment provider
+      type: xlrelease.ScriptTask
+      description: Generates Deploy configuration items required to enable live event
+        notifications.
+      script: |-
+        autoConfigResponse = deploymentProviderApi.autoconfigureDeploymentProvider("${statusWebhookEventSourceId}")
+        
+        releaseVariables['autoconfigMessage'] = autoConfigResponse.message
+        releaseVariables['autoconfigUrl'] = autoConfigResponse.url
+        releaseVariables['autoconfigDetails'] = autoConfigResponse.details
+    - name: Autoconfiguration response
+      type: xlrelease.Task
+      description: |-
+        ${autoconfigMessage}
+        
+        [View in Deploy](${autoconfigUrl})
+    color: "#3d6c9e"
   kind: WORKFLOW
   categories:
   - Application onboarding
@@ -221,6 +267,32 @@ spec:
     showOnReleaseStart: false
     label: Application ID
     description: Application ID in Digital.ai Release
+  - type: xlrelease.StringVariable
+    key: statusWebhookEventSourceId
+    requiresValue: false
+    showOnReleaseStart: false
+  - type: xlrelease.StringVariable
+    key: liveDeploymentConfigurationId
+    requiresValue: false
+    showOnReleaseStart: false
+  - type: xlrelease.StringVariable
+    key: liveDeploymentConfigurationName
+    requiresValue: false
+    showOnReleaseStart: false
+    label: Name
+    description: The name of live deployment configuration
+  - type: xlrelease.StringVariable
+    key: autoconfigDetails
+    requiresValue: false
+    showOnReleaseStart: false
+  - type: xlrelease.StringVariable
+    key: autoconfigMessage
+    requiresValue: false
+    showOnReleaseStart: false
+  - type: xlrelease.StringVariable
+    key: autoconfigUrl
+    requiresValue: false
+    showOnReleaseStart: false
   disableNotifications: true
   author: Digital.ai
   logo:
