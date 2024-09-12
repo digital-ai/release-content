@@ -12,3 +12,4 @@ spec:
   - Workflow_Deploy setup deployment provider.yaml
   - Workflow_Deploy setup live deployment configuration.yaml
   - Workflow_Deploy delete live deployment configuration.yaml
+  - Workflow_Deploy delete application.yaml
