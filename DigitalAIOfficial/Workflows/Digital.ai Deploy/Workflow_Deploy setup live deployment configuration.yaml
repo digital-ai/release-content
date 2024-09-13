@@ -50,7 +50,7 @@ spec:
       - liveDeploymentConfigurationName
     - name: Live deployment configuration filter
       type: xlrelease.UserInputTask
-      description: Input the ArgoCD application filter to select applications from
+      description: Input the Deploy application and environment filter to select applications from
         the deployment provider for live deployments.
       variables:
       - liveDeploymentConfigurationApplication
