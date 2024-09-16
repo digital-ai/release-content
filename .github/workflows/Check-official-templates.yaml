@@ -1,0 +1,81 @@
+# This workflow will execute xl-cli apply on newly created or updated yaml files to verify it is not using non-official/non default plugins and yaml syntax
+
+name: Verify Digital.ai Official workflow and templates
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+jobs:
+  run_xl_apply:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout release-content Repository
+        uses: actions/checkout@v3
+
+      - name: Get Target Branch Name
+        run: echo "TARGET_BRANCH=${{ github.event.pull_request.base.ref }}" >> $GITHUB_ENV
+
+      - name: Print Target Branch Name
+        run: echo "Target branch is $TARGET_BRANCH"
+
+      - name: Get version name from version.json
+        run: |
+          VAR_FILE=".github/config/versions.json"
+          if [ -f "$VAR_FILE" ]; then
+              echo "json file is $VAR_FILE"
+              echo "target branch is $TARGET_BRANCH"
+              product_version=$(jq -r --arg branch "$TARGET_BRANCH" '.[$branch]' "$VAR_FILE")
+              echo "Product version: $product_version"
+              echo "product_version=$product_version" >> $GITHUB_ENV
+          else
+            echo "File $VAR_FILE does not exist"
+          fi
+          echo "Debug: product_version=$product_version"
+
+      - name: Print version got from json
+        run: echo "xl-cli and docker version from versions.json file is $product_version"
+
+      - name: Pull Release Docker image
+        run: docker pull xebialabsunsupported/xl-release:$product_version
+
+      - name: Run Docker container
+        run:  |
+          docker run -p 5516:5516 -d --name xlr$product_version -e "ACCEPT_EULA=Y" -e "ADMIN_PASSWORD=admin" xebialabsunsupported/xl-release:$product_version
+          sleep 100
+
+      - name: Download and Install xl-cli
+        run: |
+          wget https://dist.xebialabs.com/public/xl-cli/$product_version/linux-amd64//xl -O xl1
+          chmod 755 xl1
+          ./xl1 version
+
+      - name: Get changed YAML files
+        id: changed-files
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const changedFiles = await github.paginate(
+              github.rest.pulls.listFiles,
+              {
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                pull_number: context.payload.pull_request.number,
+              }
+            );
+            const yamlFiles = changedFiles
+              .filter(file => file.filename.endsWith('.yaml') || file.filename.endsWith('.yml'))
+              .map(file => file.filename)
+              .join('\n');
+            return yamlFiles;
+
+      - name: Apply YAML files to check if xl-apply works
+        env:
+          ALL_CHANGED_FILES: ${{ steps.changed-files.outputs.result }}
+        run: |
+          IFS=$'\n'
+          for file in ${ALL_CHANGED_FILES}; do
+            file=$(echo "$file" | sed 's/^"//;s/"$//')
+            echo "$file was changed"
+            ./xl1 apply -f "$file"
+          done

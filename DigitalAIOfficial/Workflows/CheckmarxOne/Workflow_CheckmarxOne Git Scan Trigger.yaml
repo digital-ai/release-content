@@ -1,0 +1,156 @@
+---
+apiVersion: xl-release/v1
+kind: Templates
+metadata:
+  path: Workflows/CheckmarxOne
+  home: Digital.ai - Official/Workflows/CheckmarxOne
+spec:
+  - template: "CheckmarxOne scan Git repository"
+    description: "Triggers a CheckmarxOne scan on Git repository,\
+    \ performing SAST and SCA to detect security flaws and vulnerabilities in the code."
+    scheduledStartDate: 2024-08-30T09:00:00+05:30
+    dueDate: 2024-08-30T10:00:00+05:30
+    phases:
+      - phase: Trigger Git scan
+        tasks:
+          - name: Server Configuration
+            type: xlrelease.UserInputTask
+            description: Select the CheckmarxOne connection, or create a new one
+              if it doesn't exist.
+            variables:
+              - checkmarxOneServer
+          - name: Repository Configuration
+            type: xlrelease.UserInputTask
+            description: Specify the Git repository to scan.
+            variables:
+              - gitUrl
+              - branch
+              - gitUsername
+              - gitPassword
+              - gitToken
+          - name: Scan Configuration
+            type: xlrelease.UserInputTask
+            description: Configure the CheckmarxOne scan.
+            variables:
+              - startSASTScan
+              - startSCAScan
+              - skipSubModule
+              - waitInterval
+              - scanTags
+              - projectTags
+          - name: Trigger Scan
+            type: checkmarxOne.gitScan
+            sastPreset: "${preset}"
+            gitUrl: "${gitUrl}"
+            branch: "${branch}"
+            username: "${gitUsername}"
+            description: Initiates a scan on the specified Git repository.
+            variableMapping:
+              pythonScript.startSCAScan: "${startSCAScan}"
+              pythonScript.scanId: "${scanId}"
+              pythonScript.project_tags: "${projectTags}"
+              pythonScript.timeThreshold: "${waitInterval}"
+              pythonScript.token: "${gitToken}"
+              pythonScript.scan_tags: "${scanTags}"
+              pythonScript.password: "${gitPassword}"
+              pythonScript.checkmarxOneServer: "${checkmarxOneServer}"
+              pythonScript.skipSubModule: "${skipSubModule}"
+              pythonScript.startSASTScan: "${startSASTScan}"
+        color: '#3d6c9e'
+    kind: WORKFLOW
+    categories:
+      - Application Life Cycle Management
+    variables:
+      - type: xlrelease.ReferenceVariable
+        key: checkmarxOneServer
+        showOnReleaseStart: false
+        label: "CheckmarxOne: Server"
+        description: "CheckmarxOne: Server Connection"
+        referencedType: checkmarxOne.Server
+      - type: xlrelease.StringVariable
+        key: gitUrl
+        showOnReleaseStart: false
+        label: Git URL
+        description: Git repository URL
+      - type: xlrelease.StringVariable
+        key: branch
+        showOnReleaseStart: false
+        label: Branch
+        description: Git branch, e.g. master or main
+      - type: xlrelease.StringVariable
+        key: gitUsername
+        requiresValue: false
+        showOnReleaseStart: false
+        label: Username
+        description: Username for Git access
+      - type: xlrelease.PasswordStringVariable
+        key: gitPassword
+        requiresValue: false
+        showOnReleaseStart: false
+        label: Password
+        description: Password for Git access
+      - type: xlrelease.PasswordStringVariable
+        key: gitToken
+        requiresValue: false
+        showOnReleaseStart: false
+        label: Token
+        description: Personal token for Git access
+      - type: xlrelease.BooleanVariable
+        key: startSASTScan
+        requiresValue: false
+        showOnReleaseStart: false
+        label: SAST Scan
+        description: Indicates whether to run a SAST scan.
+        value: true
+      - type: xlrelease.BooleanVariable
+        key: startSCAScan
+        requiresValue: false
+        showOnReleaseStart: false
+        label: SCA Scan
+        description: Indicates whether to run a SCA scan.
+        value: true
+      - type: xlrelease.BooleanVariable
+        key: skipSubModule
+        requiresValue: false
+        showOnReleaseStart: false
+        label: Skip Submodule
+        description: Indicates whether to skip scanning Git submodules.
+      - type: xlrelease.IntegerVariable
+        key: waitInterval
+        showOnReleaseStart: false
+        label: Wait Interval
+        description: Time interval between status checks (in seconds).
+        value: 30
+      - type: xlrelease.MapStringStringVariable
+        key: scanTags
+        requiresValue: false
+        showOnReleaseStart: false
+        label: Scan Tags
+        description: A list of the key-value tags associated with the scan.
+      - type: xlrelease.MapStringStringVariable
+        key: projectTags
+        requiresValue: false
+        showOnReleaseStart: false
+        label: Project Tags
+        description: "A list of the key-value tags, that will overwrite the tags in current\
+      \ project."
+      - type: xlrelease.StringVariable
+        key: preset
+        requiresValue: false
+        showOnReleaseStart: false
+        label: Preset
+        description: CheckmarxOne SAST preset, e.g., ASA Premium.
+        value: ASA Premium
+      - type: xlrelease.StringVariable
+        key: scanId
+        requiresValue: false
+        showOnReleaseStart: false
+        label: Scan ID
+        description: ID of the scan to retrieve results for.
+    disableNotifications: true
+    author: Digital.ai
+    logo:
+      type: xlrelease.TemplateLogo
+      contentType: image/svg+xml
+      file: !file "template-logo/0ebff4aaf1d8b22b6efab417e7ff519f49c78771/cxlogo.svg"
+    defaultTargetFolder: Digital.ai - Official/Workflow Executions
