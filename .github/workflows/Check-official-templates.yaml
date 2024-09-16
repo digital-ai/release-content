@@ -65,8 +65,7 @@ jobs:
             );
             const yamlFiles = changedFiles
               .filter(file => file.filename.endsWith('.yaml') || file.filename.endsWith('.yml'))
-              .map(file => file.filename)
-              .join('\n');
+              .map(file => file.filename);
             return yamlFiles;
 
       - name: Apply YAML files to check if xl-apply works
