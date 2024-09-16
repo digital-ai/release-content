@@ -67,15 +67,14 @@ jobs:
               .filter(file => file.filename.endsWith('.yaml') || file.filename.endsWith('.yml'))
               .map(file => file.filename)
               .join('\n');
-            return yamlFiles;
+            return JSON.stringify(yamlFiles);
 
       - name: Apply YAML files to check if xl-apply works
         env:
           ALL_CHANGED_FILES: ${{ steps.changed-files.outputs.result }}
         run: |
-          IFS=$'\n'
-          for file in ${ALL_CHANGED_FILES}; do
-            file=$(echo "$file" | sed 's/^"//;s/"$//')
+          changed_files=$(echo $ALL_CHANGED_FILES | jq -r '.[]')
+          for file in $changed_files; do
             echo "$file was changed"
             ./xl1 apply -f "$file"
           done
