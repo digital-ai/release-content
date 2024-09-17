@@ -74,7 +74,7 @@ jobs:
           ALL_CHANGED_FILES: ${{ steps.changed-files.outputs.result }}
         run: |
           IFS=$'\n'
-          for file in ${ALL_CHANGED_FILES}; do
+          for file in $(echo -e "$ALL_CHANGED_FILES"); do
             file=$(echo "$file" | sed 's/^"//;s/"$//')
             echo "$file was changed"
             ./xl1 apply -f "$file"
