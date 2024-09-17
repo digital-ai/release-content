@@ -1,5 +1,5 @@
 ---
-apiVersion: xl-release/v1
+apiVersion: xl/v1
 kind: Import
 spec:
   imports:
