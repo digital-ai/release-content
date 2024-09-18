@@ -36,17 +36,16 @@ spec:
               liveDeploymentConfigs = statusWebhookEventSource.getProperty("liveDeploymentConfigs")
               
               configToDelete = None
-              liveDeploymentConfigs = set()
               for config in statusWebhookEventSource.getProperty("liveDeploymentConfigs"):
                 if config.id == "${liveDeploymentConfigurationId}":
-                    configToDelete = config.id
-                else:
-                    liveDeploymentConfigs.add(config)
+                 configToDelete = config
+                 break
               
               if configToDelete:
+                liveDeploymentConfigs.remove(configToDelete)
                 statusWebhookEventSource.setProperty("liveDeploymentConfigs", liveDeploymentConfigs)
                 configurationApi.updateConfiguration("${statusWebhookEventSourceId}", statusWebhookEventSource)
-                configurationApi.deleteConfiguration(configToDelete)
+                configurationApi.deleteConfiguration(configToDelete.id)
           - name: Autoconfigure deployment provider
             type: xlrelease.ScriptTask
             script: |-
