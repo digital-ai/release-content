@@ -2,12 +2,11 @@
 apiVersion: xl-release/v1
 kind: Templates
 metadata:
-  path: Workflows/CheckmarxOne
   home: Digital.ai - Official/Workflows/CheckmarxOne
 spec:
-  - template: "CheckmarxOne scan Git repository"
-    description: "Triggers a CheckmarxOne scan on Git repository,\
-    \ performing SAST and SCA to detect security flaws and vulnerabilities in the code."
+  - template: CheckmarxOne scan Git repository
+    description: "Triggers a CheckmarxOne scan on Git repository, performing SAST and\
+    \ SCA to detect security flaws and vulnerabilities in the code."
     scheduledStartDate: 2024-08-30T09:00:00+05:30
     dueDate: 2024-08-30T10:00:00+05:30
     phases:
@@ -15,8 +14,8 @@ spec:
         tasks:
           - name: Server Configuration
             type: xlrelease.UserInputTask
-            description: Select the CheckmarxOne connection, or create a new one
-              if it doesn't exist.
+            description: "Select the CheckmarxOne connection, or create a new one if it\
+        \ doesn't exist."
             variables:
               - checkmarxOneServer
           - name: Repository Configuration
@@ -32,6 +31,7 @@ spec:
             type: xlrelease.UserInputTask
             description: Configure the CheckmarxOne scan.
             variables:
+              - preset
               - startSASTScan
               - startSCAScan
               - skipSubModule
@@ -76,7 +76,7 @@ spec:
         key: branch
         showOnReleaseStart: false
         label: Branch
-        description: Git branch, e.g. master or main
+        description: "Git branch, e.g. master or main"
       - type: xlrelease.StringVariable
         key: gitUsername
         requiresValue: false
@@ -119,7 +119,7 @@ spec:
         key: waitInterval
         showOnReleaseStart: false
         label: Wait Interval
-        description: Time interval between status checks (in seconds).
+        description: Time interval between status checks (in minutes).
         value: 30
       - type: xlrelease.MapStringStringVariable
         key: scanTags
@@ -139,7 +139,7 @@ spec:
         requiresValue: false
         showOnReleaseStart: false
         label: Preset
-        description: CheckmarxOne SAST preset, e.g., ASA Premium.
+        description: "CheckmarxOne SAST preset, e.g., ASA Premium."
         value: ASA Premium
       - type: xlrelease.StringVariable
         key: scanId
