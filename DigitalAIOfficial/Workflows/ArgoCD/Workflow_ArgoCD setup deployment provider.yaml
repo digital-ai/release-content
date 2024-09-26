@@ -75,6 +75,10 @@ spec:
     categories:
       - Application onboarding
       - Create Deployment Provider
+    tags:
+      - Remote ArgoCD
+      - deployment provider
+      - new
     variables:
       - type: xlrelease.StringVariable
         key: statusWebhookEventSourceId

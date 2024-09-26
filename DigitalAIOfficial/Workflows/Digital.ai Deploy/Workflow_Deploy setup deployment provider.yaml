@@ -71,6 +71,10 @@ spec:
     categories:
       - Application onboarding
       - Create Deployment Provider
+    tags:
+      - Remote Deploy
+      - deployment provider
+      - new
     variables:
       - type: xlrelease.StringVariable
         key: statusWebhookEventSourceId
