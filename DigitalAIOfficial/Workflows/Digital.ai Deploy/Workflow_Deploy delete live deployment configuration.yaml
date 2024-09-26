@@ -2,6 +2,7 @@
 apiVersion: xl-release/v1
 kind: Templates
 metadata:
+  path: Workflows/Digital.ai Deploy
   home: Digital.ai - Official/Workflows/Digital.ai Deploy
 spec:
   - template: Deploy delete live deployment configuration

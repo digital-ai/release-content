@@ -2,6 +2,7 @@
 apiVersion: xl-release/v1
 kind: Templates
 metadata:
+  path: Workflows/ArgoCD
   home: Digital.ai - Official/Workflows/ArgoCD
 spec:
 - template: ArgoCD setup live deployment configuration
