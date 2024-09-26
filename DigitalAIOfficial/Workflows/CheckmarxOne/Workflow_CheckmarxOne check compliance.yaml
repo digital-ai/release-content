@@ -2,11 +2,13 @@
 apiVersion: xl-release/v1
 kind: Templates
 metadata:
+  path: Workflows/CheckmarxOne
   home: Digital.ai - Official/Workflows/CheckmarxOne
 spec:
-  - template: CheckmarxOne scan Git repository
-    description: "Triggers a CheckmarxOne scan on Git repository, performing SAST and\
-    \ SCA to detect security flaws and vulnerabilities in the code."
+  - template: CheckmarxOne check compliance
+    description: CheckmarxOne check compliance triggers a scan on Git repository and
+      then automates code assessment using SAST and SCA  to detect security flaws and
+      vulnerabilities in the code.
     scheduledStartDate: 2024-08-30T09:00:00+05:30
     dueDate: 2024-08-30T10:00:00+05:30
     phases:
@@ -31,6 +33,7 @@ spec:
             type: xlrelease.UserInputTask
             description: Configure the CheckmarxOne scan.
             variables:
+              - projectName
               - preset
               - startSASTScan
               - startSCAScan
@@ -40,6 +43,7 @@ spec:
               - projectTags
           - name: Trigger Scan
             type: checkmarxOne.gitScan
+            projectName: "${projectName}"
             sastPreset: "${preset}"
             gitUrl: "${gitUrl}"
             branch: "${branch}"
@@ -56,6 +60,74 @@ spec:
               pythonScript.checkmarxOneServer: "${checkmarxOneServer}"
               pythonScript.skipSubModule: "${skipSubModule}"
               pythonScript.startSASTScan: "${startSASTScan}"
+        color: '#3d6c9e'
+      - phase: SAST - Check Compliance
+        tasks:
+          - name: SAST - Severity Threshold
+            type: xlrelease.UserInputTask
+            description: Please enter the thresholds for vulnerability categories. The compliance
+              fails when the if actual values exceeds the defined thresholds.
+            precondition: |-
+              import json
+              if releaseVariables['startSASTScan'] != False:
+                result = True
+              elif releaseVariables['startSCAScan'] != False:
+                result = False
+            variables:
+              - sastHigh
+              - sastMedium
+              - sastLow
+          - name: SAST - Check Compliance
+            type: checkmarxOne.checkSastCompliance
+            projectName: "${projectName}"
+            scanId: "${scanId}"
+            description: SAST - Check Compliance verifies that the project vulnerabilities
+              do not exceed the defined thresholds.
+            precondition: |-
+              import json
+              if releaseVariables['startSASTScan'] != False:
+                result = True
+              elif releaseVariables['startSCAScan'] != False:
+                result = False
+            variableMapping:
+              pythonScript.securityRiskMediumThreshold: "${sastMedium}"
+              pythonScript.securityRiskHighThreshold: "${sastHigh}"
+              pythonScript.securityRiskLowThreshold: "${sastLow}"
+              pythonScript.checkmarxOneServer: "${checkmarxOneServer}"
+        color: '#3d6c9e'
+      - phase: SCA - Check Compliance
+        tasks:
+          - name: SCA - Severity Threshold
+            type: xlrelease.UserInputTask
+            description: Please enter the thresholds for vulnerability categories. The compliance
+              fails when the if actual values exceeds the defined thresholds.
+            precondition: |-
+              import json
+              if releaseVariables['startSCAScan'] != False:
+                result = True
+              elif releaseVariable['startSASTScan'] != False:
+                result = False
+            variables:
+              - scaHigh
+              - scaMedium
+              - scaLow
+          - name: SCA - Check Compliance
+            type: checkmarxOne.checkScaCompliance
+            checkmarxOneServer: "CheckmarxOne: Server"
+            projectName: "${projectName}"
+            scanId: "${scanId}"
+            description: SCA - Check Compliance verifies that the project vulnerabilities
+              do not exceed the defined thresholds.
+            precondition: |-
+              import json
+              if releaseVariables['startSCAScan'] != False:
+                result = True
+              elif releaseVariable['startSASTScan'] != False:
+                result = False
+            variableMapping:
+              pythonScript.securityRiskMediumThreshold: "${scaMedium}"
+              pythonScript.securityRiskHighThreshold: "${scaHigh}"
+              pythonScript.securityRiskLowThreshold: "${scaLow}"
         color: '#3d6c9e'
     kind: WORKFLOW
     categories:
@@ -135,6 +207,11 @@ spec:
         description: "A list of the key-value tags, that will overwrite the tags in current\
       \ project."
       - type: xlrelease.StringVariable
+        key: projectName
+        showOnReleaseStart: false
+        label: Project Name
+        description: CheckmarxOne project name.
+      - type: xlrelease.StringVariable
         key: preset
         requiresValue: false
         showOnReleaseStart: false
@@ -147,10 +224,40 @@ spec:
         showOnReleaseStart: false
         label: Scan ID
         description: ID of the scan to retrieve results for.
+      - type: xlrelease.IntegerVariable
+        key: sastHigh
+        showOnReleaseStart: false
+        label: High
+        description: High severity threshold.
+      - type: xlrelease.IntegerVariable
+        key: sastMedium
+        showOnReleaseStart: false
+        label: Medium
+        description: Medium severity threshold.
+      - type: xlrelease.IntegerVariable
+        key: sastLow
+        showOnReleaseStart: false
+        label: Low
+        description: Low severity threshold.
+      - type: xlrelease.IntegerVariable
+        key: scaHigh
+        showOnReleaseStart: false
+        label: High
+        description: High severity threshold.
+      - type: xlrelease.IntegerVariable
+        key: scaMedium
+        showOnReleaseStart: false
+        label: Medium
+        description: Medium severity threshold.
+      - type: xlrelease.IntegerVariable
+        key: scaLow
+        showOnReleaseStart: false
+        label: Low
+        description: Low severiy threshold.
     disableNotifications: true
     author: Digital.ai
     logo:
       type: xlrelease.TemplateLogo
       contentType: image/svg+xml
-      file: !file "template-logo/0ebff4aaf1d8b22b6efab417e7ff519f49c78771/cxlogo.svg"
+      file: !file "template-logo/a729696e87b10f1b1533e5ec5ddee2e952052114/cxlogo.svg"
     defaultTargetFolder: Digital.ai - Official/Workflow Executions
