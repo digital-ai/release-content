@@ -105,7 +105,7 @@ spec:
               import json
               if releaseVariables['startSCAScan'] != False:
                 result = True
-              elif releaseVariable['startSASTScan'] != False:
+              elif releaseVariables['startSASTScan'] != False:
                 result = False
             variables:
               - scaHigh
@@ -122,7 +122,7 @@ spec:
               import json
               if releaseVariables['startSCAScan'] != False:
                 result = True
-              elif releaseVariable['startSASTScan'] != False:
+              elif releaseVariables['startSASTScan'] != False:
                 result = False
             variableMapping:
               pythonScript.securityRiskMediumThreshold: "${scaMedium}"
