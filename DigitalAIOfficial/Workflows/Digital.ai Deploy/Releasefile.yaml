@@ -3,7 +3,7 @@ apiVersion: xl-release/v1
 kind: Import
 spec:
   imports:
-  - Workflow_AWS Lamba setup function with Digital.ai Deploy.yaml
+  - Workflow_AWS Lambda setup function with Digital.ai Deploy.yaml
   - Workflow_Azure setup application with Digital.ai Deploy.yaml
   - Workflow_GCP setup application with Digital.ai Deploy.yaml
   - Workflow_Helm application setup with Digital.ai Deploy.yaml
