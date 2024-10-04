@@ -65,7 +65,7 @@ spec:
             description: |-
               ${autoconfigMessage}
               
-              [docs](${autoconfigUrl})
+              [More about ArgoCD notifications](${autoconfigUrl})
               
               ```
               ${autoconfigDetails}
