@@ -10,20 +10,6 @@ spec:
   phases:
   - phase: Input
     tasks:
-    - name: Check if remote runner exists
-      type: xlrelease.ScriptTask
-      description: Checks if an enabled remote runner is present in the system.
-      script: |-
-        def check_runners(runners):
-          for runner in runners:
-            if runner["enabled"] and "remote" in runner["capabilities"]:
-              return True
-          return False
-
-        runners = configurationApi.searchByTypeAndTitle("xlrelease.JobRunner", "")
-
-        if not check_runners(runners):
-          raise Exception("There is no job runner with 'remote' capability enabled")
     - name: Fetch details
       type: xlrelease.ScriptTask
       description: Fetches details about target server.
@@ -95,8 +81,15 @@ spec:
 
         The following annotation is applied to all apps matching the specified filter:
         `notifications.argoproj.io/subscribe.on-app-status-changed.release-webhook`
-      script: "deploymentProviderApi.patchDeploymentProvider(\"${statusWebhookEventSourceId}\"\
-        )"
+      script: |-
+        from java.lang import Throwable
+
+        try:
+          deploymentProviderApi.patchDeploymentProvider("${statusWebhookEventSourceId}")
+        except Throwable as e:
+          if "Cannot find active remote runner" in str(e):
+            raise Exception("Failed to find active remote runner for executing container script.")
+          raise
     color: '#3d6c9e'
   kind: WORKFLOW
   categories:

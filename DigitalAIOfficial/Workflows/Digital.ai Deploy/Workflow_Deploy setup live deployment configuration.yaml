@@ -10,20 +10,6 @@ spec:
   phases:
   - phase: Input
     tasks:
-    - name: Check if remote runner exists
-      type: xlrelease.ScriptTask
-      description: Checks if an enabled remote runner is present in the system.
-      script: |-
-        def check_runners(runners):
-          for runner in runners:
-            if runner["enabled"] and "remote" in runner["capabilities"]:
-              return True
-          return False
-
-        runners = configurationApi.searchByTypeAndTitle("xlrelease.JobRunner", "")
-
-        if not check_runners(runners):
-          raise Exception("There is no job runner with 'remote' capability enabled")
     - name: Fetch details
       type: xlrelease.ScriptTask
       description: Fetches details about target server.
@@ -96,9 +82,16 @@ spec:
       type: xlrelease.ScriptTask
       description: Creates webhook configuration CIs on Deploy Server.
       script: |-
-        autoconfigResponse = deploymentProviderApi.autoconfigureDeploymentProvider("${statusWebhookEventSourceId}")
-        releaseVariables['autoconfigMessage'] = autoconfigResponse.message
-        releaseVariables['autoconfigUrl'] = autoconfigResponse.url
+        from java.lang import Throwable
+        
+        try:
+          autoconfigResponse = deploymentProviderApi.autoconfigureDeploymentProvider("${statusWebhookEventSourceId}")
+          releaseVariables['autoconfigMessage'] = autoconfigResponse.message
+          releaseVariables['autoconfigUrl'] = autoconfigResponse.url
+        except Throwable as e:
+          if "Cannot find active remote runner" in str(e):
+            raise Exception("Failed to find active remote runner for executing container script.")
+          raise
     - name: Check configured CIs
       type: xlrelease.Task
       description: |-

@@ -13,19 +13,6 @@ spec:
     phases:
       - phase: Check if application exists
         tasks:
-          - name: Check if remote runner exists
-            type: xlrelease.ScriptTask
-            script: |-
-              def check_runners(runners):
-                for runner in runners:
-                  if runner["enabled"] and "remote" in runner["capabilities"]:
-                    return True
-                return False
-              
-              runners = configurationApi.searchByTypeAndTitle("xlrelease.JobRunner", "")
-              
-              if not check_runners(runners):
-                raise Exception("There is no job runner with 'remote' capability enabled")
           - name: Application input
             type: xlrelease.UserInputTask
             description: Input for application information together with the ArgoCD server
@@ -270,6 +257,7 @@ spec:
               to deployment provider.
             script: |-
               from com.xebialabs.xlrelease.api.v1.forms import DeploymentProviderSetup
+              from java.lang import Throwable
               
               folderId = getCurrentFolder().getId()
               configId = releaseVariables['liveDeploymentConfigurationId']
@@ -277,18 +265,29 @@ spec:
               
               deploymentProviderSetup = DeploymentProviderSetup(folderId, serverId, configId)
               
-              statusWebhookEventSourceId = deploymentProviderApi.setupDeploymentProvider(deploymentProviderSetup)
-              
-              releaseVariables['statusWebhookEventSourceId'] = statusWebhookEventSourceId
+              try:
+                statusWebhookEventSourceId = deploymentProviderApi.setupDeploymentProvider(deploymentProviderSetup)
+                releaseVariables['statusWebhookEventSourceId'] = statusWebhookEventSourceId
+              except Throwable as e:
+                if "Cannot find active remote runner" in str(e):
+                  raise Exception("Failed to find active remote runner for executing container script.")
+                raise
           - name: Autoconfigure deployment provider
             type: xlrelease.ScriptTask
             description: Generates ArgoCD config map required to enable live event notifications.
             script: |-
-              autoConfigResponse = deploymentProviderApi.autoconfigureDeploymentProvider("${statusWebhookEventSourceId}")
+              from java.lang import Throwable
               
-              releaseVariables['autoconfigMessage'] = autoConfigResponse.message
-              releaseVariables['autoconfigUrl'] = autoConfigResponse.url
-              releaseVariables['autoconfigDetails'] = autoConfigResponse.details
+              try:
+                autoConfigResponse = deploymentProviderApi.autoconfigureDeploymentProvider("${statusWebhookEventSourceId}")
+                
+                releaseVariables['autoconfigMessage'] = autoConfigResponse.message
+                releaseVariables['autoconfigUrl'] = autoConfigResponse.url
+                releaseVariables['autoconfigDetails'] = autoConfigResponse.details
+              except Throwable as e:
+                if "Cannot find active remote runner" in str(e):
+                  raise Exception("Failed to find active remote runner for executing container script.")
+                raise
           - name: Autoconfig response
             type: xlrelease.Task
             description: |-

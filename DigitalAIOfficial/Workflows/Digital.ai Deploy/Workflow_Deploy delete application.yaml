@@ -11,19 +11,6 @@ spec:
     phases:
       - phase: Delete Application in Deploy
         tasks:
-          - name: Check if remote runner exists
-            type: xlrelease.ScriptTask
-            script: |-
-              def check_runners(runners):
-                for runner in runners:
-                  if runner["enabled"] and "remote" in runner["capabilities"]:
-                    return True
-                return False
-              
-              runners = configurationApi.searchByTypeAndTitle("xlrelease.JobRunner", "")
-              
-              if not check_runners(runners):
-                raise Exception("There is no job runner with 'remote' capability enabled")
           - name: Fetch details
             type: xlrelease.ScriptTask
             script: |-
