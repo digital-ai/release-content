@@ -3,4 +3,4 @@ apiVersion: xl-release/v1
 kind: Import
 spec:
   imports:
-  - Workflow_CheckmarxOne check compliance.yaml
+  - Workflow_CheckmarxOne scan Git repository.yaml

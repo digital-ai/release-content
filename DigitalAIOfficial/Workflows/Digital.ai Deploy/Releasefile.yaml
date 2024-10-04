@@ -6,7 +6,7 @@ spec:
   - Workflow_AWS Lamba setup function with Digital.ai Deploy.yaml
   - Workflow_Azure setup application with Digital.ai Deploy.yaml
   - Workflow_GCP setup application with Digital.ai Deploy.yaml
-  - Workflow_Helm Application Setup with Digital.ai Deploy.yaml
+  - Workflow_Helm application setup with Digital.ai Deploy.yaml
   - Workflow_Tomcat DataSource setup with Digital.ai Deploy.yaml
   - Workflow_Websphere JaasAlias setup with Digital.ai Deploy.yaml
   - Workflow_Deploy setup deployment provider.yaml
