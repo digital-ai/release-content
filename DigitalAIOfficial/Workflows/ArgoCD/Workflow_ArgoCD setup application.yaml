@@ -251,35 +251,35 @@ spec:
               liveDeploymentConfiguration = configurationApi.addConfiguration(liveDeploymentConfiguration)
               
               releaseVariables['liveDeploymentConfigurationId'] = liveDeploymentConfiguration.getId()
-          - name: Setup deployment provider
+          - name: Setup deployment server
             type: xlrelease.ScriptTask
             description: Creates required configuration items in Release for connection
-              to deployment provider.
+              to deployment server.
             script: |-
-              from com.xebialabs.xlrelease.api.v1.forms import DeploymentProviderSetup
+              from com.xebialabs.xlrelease.api.v1.forms import DeploymentServerSetup
               from java.lang import Throwable
               
               folderId = getCurrentFolder().getId()
               configId = releaseVariables['liveDeploymentConfigurationId']
               serverId = releaseVariables['argoCDApiServer']
               
-              deploymentProviderSetup = DeploymentProviderSetup(folderId, serverId, configId)
+              deploymentServerSetup = DeploymentServerSetup(folderId, serverId, configId)
               
               try:
-                statusWebhookEventSourceId = deploymentProviderApi.setupDeploymentProvider(deploymentProviderSetup)
+                statusWebhookEventSourceId = deploymentServerApi.setupDeploymentServer(deploymentServerSetup)
                 releaseVariables['statusWebhookEventSourceId'] = statusWebhookEventSourceId
               except Throwable as e:
                 if "Cannot find active remote runner" in str(e):
                   raise Exception("Failed to find active remote runner for executing container script.")
                 raise
-          - name: Autoconfigure deployment provider
+          - name: Autoconfigure deployment server
             type: xlrelease.ScriptTask
             description: Generates ArgoCD config map required to enable live event notifications.
             script: |-
               from java.lang import Throwable
               
               try:
-                autoConfigResponse = deploymentProviderApi.autoconfigureDeploymentProvider("${statusWebhookEventSourceId}")
+                autoConfigResponse = deploymentServerApi.autoconfigureDeploymentServer("${statusWebhookEventSourceId}")
                 
                 releaseVariables['autoconfigMessage'] = autoConfigResponse.message
                 releaseVariables['autoconfigUrl'] = autoConfigResponse.url

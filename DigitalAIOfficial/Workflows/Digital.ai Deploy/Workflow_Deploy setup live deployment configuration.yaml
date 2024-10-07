@@ -38,7 +38,7 @@ spec:
     - name: Live deployment configuration filter
       type: xlrelease.UserInputTask
       description: Input the Deploy application and environment filter to select applications from
-        the deployment provider for live deployments.
+        the deployment server for live deployments.
       variables:
       - liveDeploymentConfigurationApplication
       - liveDeploymentConfigurationEnvironment
@@ -85,7 +85,7 @@ spec:
         from java.lang import Throwable
         
         try:
-          autoconfigResponse = deploymentProviderApi.autoconfigureDeploymentProvider("${statusWebhookEventSourceId}")
+          autoconfigResponse = deploymentServerApi.autoconfigureDeploymentServer("${statusWebhookEventSourceId}")
           releaseVariables['autoconfigMessage'] = autoconfigResponse.message
           releaseVariables['autoconfigUrl'] = autoconfigResponse.url
         except Throwable as e:
@@ -106,7 +106,7 @@ spec:
     - Application onboarding
   tags:
     - Remote Deploy
-    - deployment provider
+    - deployment server
     - config
   variables:
   - type: xlrelease.StringVariable

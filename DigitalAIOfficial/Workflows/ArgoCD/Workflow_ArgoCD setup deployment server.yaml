@@ -5,8 +5,8 @@ metadata:
   path: Workflows/ArgoCD
   home: Digital.ai - Official/Workflows/ArgoCD
 spec:
-  - template: ArgoCD setup deployment provider
-    description: Create required connections for ArgoCD deployment provider
+  - template: ArgoCD setup deployment server
+    description: Create required connections for ArgoCD deployment server
     scheduledStartDate: 2024-08-28T09:00:00+02:00
     dueDate: 2024-08-28T10:00:00+02:00
     phases:
@@ -20,34 +20,34 @@ spec:
         color: "#3d6c9e"
       - phase: Configure connection
         tasks:
-          - name: Setup deployment provider
+          - name: Setup deployment server
             type: xlrelease.ScriptTask
             description: Creates required configuration items in Release for connection
-              to deployment provider.
+              to deployment server.
             script: |-
-              from com.xebialabs.xlrelease.api.v1.forms import DeploymentProviderSetup
+              from com.xebialabs.xlrelease.api.v1.forms import DeploymentServerSetup
               from java.lang import Throwable
               
               folderId = getCurrentFolder().getId()
               serverId = releaseVariables['server']
               
-              deploymentProviderSetup = DeploymentProviderSetup(folderId, serverId)
+              deploymentServerSetup = DeploymentServerSetup(folderId, serverId)
               
               try:
-                statusWebhookEventSourceId = deploymentProviderApi.setupDeploymentProvider(deploymentProviderSetup)
+                statusWebhookEventSourceId = deploymentServerApi.setupDeploymentServer(deploymentServerSetup)
                 releaseVariables['statusWebhookEventSourceId'] = statusWebhookEventSourceId
               except Throwable as e:
                 if "Cannot find active remote runner" in str(e):
                   raise Exception("Failed to find active remote runner for executing container script.")
                 raise
-          - name: Autoconfigure deployment provider
+          - name: Autoconfigure deployment server
             type: xlrelease.ScriptTask
             description: Generates ArgoCD config map required to enable live event notifications.
             script: |-
               from java.lang import Throwable
               
               try:
-                autoConfigResponse = deploymentProviderApi.autoconfigureDeploymentProvider("${statusWebhookEventSourceId}")
+                autoConfigResponse = deploymentServerApi.autoconfigureDeploymentServer("${statusWebhookEventSourceId}")
                 releaseVariables['autoconfigMessage'] = autoConfigResponse.message
                 releaseVariables['autoconfigUrl'] = autoConfigResponse.url
                 releaseVariables['autoconfigDetails'] = autoConfigResponse.details
@@ -71,11 +71,10 @@ spec:
         color: "#3d6c9e"
     kind: WORKFLOW
     categories:
-      - Application onboarding
-      - Create Deployment Provider
+      - Create Deployment Server
     tags:
       - Remote ArgoCD
-      - deployment provider
+      - deployment server
       - new
     variables:
       - type: xlrelease.StringVariable

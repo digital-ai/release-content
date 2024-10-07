@@ -44,7 +44,7 @@ spec:
               from java.lang import Throwable
 
               try:
-                deploymentProviderApi.patchDeploymentProvider("${statusWebhookEventSourceId}")
+                deploymentServerApi.patchDeploymentServer("${statusWebhookEventSourceId}")
               except Throwable as e:
                 if "Cannot find active remote runner" in str(e):
                   raise Exception("Failed to find active remote runner for executing container script.")
@@ -55,7 +55,7 @@ spec:
       - Application onboarding
     tags:
       - Remote ArgoCD
-      - deployment provider
+      - deployment server
       - delete
     variables:
       - type: xlrelease.StringVariable

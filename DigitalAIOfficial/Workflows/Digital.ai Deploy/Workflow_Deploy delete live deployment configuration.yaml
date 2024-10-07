@@ -33,13 +33,13 @@ spec:
                 statusWebhookEventSource.setProperty("liveDeploymentConfigs", liveDeploymentConfigs)
                 configurationApi.updateConfiguration("${statusWebhookEventSourceId}", statusWebhookEventSource)
                 configurationApi.deleteConfiguration(configToDelete.id)
-          - name: Autoconfigure deployment provider
+          - name: Autoconfigure deployment server
             type: xlrelease.ScriptTask
             script: |-
               from java.lang import Throwable
               
               try:
-                autoconfigResponse = deploymentProviderApi.autoconfigureDeploymentProvider("${statusWebhookEventSourceId}")
+                autoconfigResponse = deploymentServerApi.autoconfigureDeploymentServer("${statusWebhookEventSourceId}")
                 releaseVariables['autoconfigMessage'] = autoconfigResponse.message
                 releaseVariables['autoconfigUrl'] = autoconfigResponse.url
               except Throwable as e:
@@ -58,7 +58,7 @@ spec:
       - Application onboarding
     tags:
       - Remote Deploy
-      - deployment provider
+      - deployment server
       - delete
     variables:
       - type: xlrelease.StringVariable

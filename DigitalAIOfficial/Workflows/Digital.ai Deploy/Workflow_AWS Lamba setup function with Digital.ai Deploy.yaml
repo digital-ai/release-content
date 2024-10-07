@@ -193,28 +193,28 @@ spec:
         liveDeploymentConfiguration = configurationApi.addConfiguration(liveDeploymentConfiguration)
         
         releaseVariables['liveDeploymentConfigurationId'] = liveDeploymentConfiguration.getId()
-    - name: Setup deployment provider
+    - name: Setup deployment server
       type: xlrelease.ScriptTask
       description: Creates required configuration items in Release for connection
-        to deployment provider.
+        to deployment server.
       script: |-
-        from com.xebialabs.xlrelease.api.v1.forms import DeploymentProviderSetup
+        from com.xebialabs.xlrelease.api.v1.forms import DeploymentServerSetup
         
         folderId = getCurrentFolder().getId()
         configId = releaseVariables['liveDeploymentConfigurationId']
         serverId = releaseVariables['deployServer']
         
-        deploymentProviderSetup = DeploymentProviderSetup(folderId, serverId, configId)
+        deploymentServerSetup = DeploymentServerSetup(folderId, serverId, configId)
         
-        statusWebhookEventSourceId = deploymentProviderApi.setupDeploymentProvider(deploymentProviderSetup)
+        statusWebhookEventSourceId = deploymentServerApi.setupDeploymentServer(deploymentServerSetup)
         
         releaseVariables['statusWebhookEventSourceId'] = statusWebhookEventSourceId
-    - name: Autoconfigure deployment provider
+    - name: Autoconfigure deployment server
       type: xlrelease.ScriptTask
       description: Generates Deploy configuration items required to enable live event
         notifications.
       script: |-
-        autoConfigResponse = deploymentProviderApi.autoconfigureDeploymentProvider("${statusWebhookEventSourceId}")
+        autoConfigResponse = deploymentServerApi.autoconfigureDeploymentServer("${statusWebhookEventSourceId}")
         
         releaseVariables['autoconfigMessage'] = autoConfigResponse.message
         releaseVariables['autoconfigUrl'] = autoConfigResponse.url

@@ -37,7 +37,7 @@ spec:
     - name: Live deployment configuration filter
       type: xlrelease.UserInputTask
       description: Input the ArgoCD application filter to select applications from
-        the deployment provider for live deployments.
+        the deployment server for live deployments.
       variables:
       - liveDeploymentConfigurationApplication
     color: '#3d6c9e'
@@ -85,7 +85,7 @@ spec:
         from java.lang import Throwable
 
         try:
-          deploymentProviderApi.patchDeploymentProvider("${statusWebhookEventSourceId}")
+          deploymentServerApi.patchDeploymentServer("${statusWebhookEventSourceId}")
         except Throwable as e:
           if "Cannot find active remote runner" in str(e):
             raise Exception("Failed to find active remote runner for executing container script.")
@@ -96,7 +96,7 @@ spec:
     - Application onboarding
   tags:
     - Remote ArgoCD
-    - deployment provider
+    - deployment server
     - config
   variables:
   - type: xlrelease.StringVariable

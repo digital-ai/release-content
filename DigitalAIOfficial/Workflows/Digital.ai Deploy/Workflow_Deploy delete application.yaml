@@ -16,7 +16,7 @@ spec:
             script: |-
               from com.xebialabs.xlrelease.domain.environments import LiveDeployment
               
-              liveDeployment = deploymentProviderApi.getLiveDeployment("${liveDeploymentId}")
+              liveDeployment = deploymentServerApi.getLiveDeployment("${liveDeploymentId}")
               statusWebhookEventSource = configurationApi.getConfiguration(liveDeployment.eventSourceId)
               
               applicationName = liveDeployment.getApplication().getTitle()
