@@ -32,6 +32,7 @@ spec:
             type: xlrelease.UserInputTask
             description: Configure the CheckmarxOne scan.
             variables:
+              - preset
               - startSASTScan
               - startSCAScan
               - skipSubModule
@@ -119,7 +120,7 @@ spec:
         key: waitInterval
         showOnReleaseStart: false
         label: Wait Interval
-        description: Time interval between status checks (in seconds).
+        description: Time interval between status checks (in minutes).
         value: 30
       - type: xlrelease.MapStringStringVariable
         key: scanTags

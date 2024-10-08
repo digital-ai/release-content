@@ -3,4 +3,4 @@ apiVersion: xl-release/v1
 kind: Import
 spec:
   imports:
-  - Workflow_Setup Release Folders and Variables.yaml
+  - Workflow_Digital.ai Release setup folders and variables.yaml

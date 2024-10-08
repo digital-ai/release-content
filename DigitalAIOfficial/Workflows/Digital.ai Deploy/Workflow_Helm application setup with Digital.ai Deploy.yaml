@@ -5,7 +5,7 @@ metadata:
   path: Workflows/Digital.ai Deploy
   home: Digital.ai - Official/Workflows/Digital.ai Deploy
 spec:
-- template: Helm Application Setup with Digital.ai Deploy
+- template: Helm application setup with Digital.ai Deploy
   description: "Easily create a Helm application in Digital.ai Deploy that can be\
     \ deployed to a target Kubernetes Cluster, including its respective environment\
     \ and infrastructure setup."
