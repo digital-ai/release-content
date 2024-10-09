@@ -22,7 +22,7 @@ spec:
               applicationName = liveDeployment.getApplication().getTitle()
               environmentName = liveDeployment.getEnvironment().getTitle()
               environmentPath = liveDeployment.getEnvironment().getDeploymentTarget().getProperty("environmentPath")
-              environmentCiId = environmentPath.split("ciId=")[-1] if "ciId=" in environmentPath else ""
+              environmentCiId = (environmentPath.split("ciId=")[-1] if "ciId=" in environmentPath else "").rstrip(")")
               
               releaseVariables['statusWebhookEventSourceId'] = statusWebhookEventSource.id
               releaseVariables['deployedApplication'] = environmentCiId + "/" + applicationName
