@@ -64,6 +64,7 @@ spec:
       - Remote ArgoCD
       - application
       - delete
+      - internal
     categories:
       - Application onboarding
     variables:

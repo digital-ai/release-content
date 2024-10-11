@@ -108,6 +108,7 @@ spec:
     - Remote Deploy
     - deployment server
     - config
+    - internal
   variables:
   - type: xlrelease.StringVariable
     key: statusWebhookEventSourceId
