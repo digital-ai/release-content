@@ -57,6 +57,7 @@ spec:
       - Remote ArgoCD
       - deployment server
       - delete
+      - internal
     variables:
       - type: xlrelease.StringVariable
         key: statusWebhookEventSourceId
