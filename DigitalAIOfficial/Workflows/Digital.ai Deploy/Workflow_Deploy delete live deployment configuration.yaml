@@ -12,32 +12,29 @@ spec:
     phases:
       - phase: Delete live deployment config
         tasks:
-          - name: Delete live deployment configuration
+          - name: Configure Digital.ai Release
             type: xlrelease.ScriptTask
-            description: Deletes deployment configuration from event source and from system.
+            description: Deleting Live Deployment configuration
             script: |-
               from com.xebialabs.xlrelease.domain import Configuration
               from com.xebialabs.deployit.plugin.api.reflect import Type
-              
               statusWebhookEventSource = configurationApi.getConfiguration("${statusWebhookEventSourceId}")
               liveDeploymentConfigs = statusWebhookEventSource.getProperty("liveDeploymentConfigs")
-              
               configToDelete = None
               for config in statusWebhookEventSource.getProperty("liveDeploymentConfigs"):
                 if config.id == "${liveDeploymentConfigurationId}":
                  configToDelete = config
                  break
-              
               if configToDelete:
                 liveDeploymentConfigs.remove(configToDelete)
                 statusWebhookEventSource.setProperty("liveDeploymentConfigs", liveDeploymentConfigs)
                 configurationApi.updateConfiguration("${statusWebhookEventSourceId}", statusWebhookEventSource)
                 configurationApi.deleteConfiguration(configToDelete.id)
-          - name: Autoconfigure deployment server
+          - name: Configure Digital.ai Deploy
             type: xlrelease.ScriptTask
+            description: Deleting webhook configuration from Digital.ai Deploy
             script: |-
               from java.lang import Throwable
-              
               try:
                 autoconfigResponse = deploymentServerApi.autoconfigureDeploymentServer("${statusWebhookEventSourceId}")
                 releaseVariables['autoconfigMessage'] = autoconfigResponse.message
@@ -46,20 +43,19 @@ spec:
                 if "Cannot find active remote runner" in str(e):
                   raise Exception("Failed to find active remote runner for executing container script.")
                 raise
-          - name: Autoconfig response
+          - name: Configuration successful
             type: xlrelease.Task
             description: |-
               ${autoconfigMessage}
-              
-              [View in Deploy](${autoconfigUrl})
+              [View configuration in Deploy](${autoconfigUrl})
         color: "#3d6c9e"
     kind: WORKFLOW
-    categories:
-      - Application onboarding
     tags:
       - Remote Deploy
       - deployment server
       - delete
+    categories:
+      - Application onboarding
     variables:
       - type: xlrelease.StringVariable
         key: statusWebhookEventSourceId

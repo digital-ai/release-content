@@ -11,33 +11,33 @@ spec:
     phases:
       - phase: Delete Application in Deploy
         tasks:
-          - name: Fetch details
+          - name: Get configuration details
             type: xlrelease.ScriptTask
+            description: Getting configuration details of the target deployment server.
             script: |-
               from com.xebialabs.xlrelease.domain.environments import LiveDeployment
-              
               liveDeployment = deploymentServerApi.getLiveDeployment("${liveDeploymentId}")
               statusWebhookEventSource = configurationApi.getConfiguration(liveDeployment.eventSourceId)
-              
               applicationName = liveDeployment.getApplication().getTitle()
               environmentName = liveDeployment.getEnvironment().getTitle()
               environmentPath = liveDeployment.getEnvironment().getDeploymentTarget().getProperty("environmentPath")
               environmentCiId = environmentPath.split("ciId=")[-1] if "ciId=" in environmentPath else ""
-              
               releaseVariables['statusWebhookEventSourceId'] = statusWebhookEventSource.id
               releaseVariables['deployedApplication'] = environmentCiId + "/" + applicationName
               releaseVariables['applicationName'] = applicationName
               releaseVariables['environmentName'] = environmentName
               releaseVariables['server'] = statusWebhookEventSource["sourceServer"].id
-          - name: Application Details
+          - name: Application details
             type: xlrelease.UserInputTask
-            description: Please enter the required information for application you want
-              to delete.
+            description: |-
+              Please enter the application you want to delete.
+              The application will also be undeployed
             variables:
               - server
               - deployedApplication
-          - name: Undeploy Application in Deploy
+          - name: Undeploy application in Deploy
             type: deploy.Undeploy
+            description: "Undeploying **${deployedApplication}**"
             variableMapping:
               server: "${server}"
             capabilities:
@@ -48,23 +48,19 @@ spec:
             numberOfPollingTrials: 0
             displayStepLogs: true
             connectionRetries: 10
-          - name: Delete deployment configuration
+          - name: Delete configuration
             type: xlrelease.ScriptTask
-            description: Deletes deployment configuration from event source if it matches
-              the deleted application.
+            description: Deleting  configuration from Digital.ai Release
             script: |-
               statusWebhookEventSource = configurationApi.getConfiguration("${statusWebhookEventSourceId}")
               liveDeploymentConfigs = statusWebhookEventSource.getProperty("liveDeploymentConfigs")
-              
               applicationName = "${applicationName}"
               environmentName = "${applicationName}"
-              
               configToDelete = None
               for config in liveDeploymentConfigs:
                   if config.getProperty("application") == applicationName and config.getProperty("environment") == environmentName:
                       configToDelete = config
                       break
-              
               if configToDelete:
                   liveDeploymentConfigs.remove(configToDelete)
                   statusWebhookEventSource.setProperty("liveDeploymentConfigs", liveDeploymentConfigs)
