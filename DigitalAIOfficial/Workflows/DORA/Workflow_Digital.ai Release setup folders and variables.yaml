@@ -5,7 +5,7 @@ metadata:
   path: Workflows/DORA
   home: Digital.ai - Official/Workflows/DORA
 spec:
-- template: Setup Release Folders and Variables
+- template: Digital.ai Release setup folders and variables
   description: Setup Folders in Digital.ai Release and create variables within the
     folders.
   scheduledStartDate: 2024-02-20T09:00:00+05:30
@@ -97,5 +97,5 @@ spec:
   logo:
     type: xlrelease.TemplateLogo
     contentType: image/svg+xml
-    file: !file "template-logo/e0a83e68906c3fff6f2ebefaec7d6b5445ae521d/release.svg"
+    file: !file "template-logo/0ebff4aaf1d8b22b6efab417e7ff519f49c78771/release.svg"
   defaultTargetFolder: Digital.ai - Official/Workflow Executions

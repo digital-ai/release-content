@@ -130,6 +130,7 @@ spec:
       - Remote ArgoCD
       - application
       - update
+      - internal
     categories:
       - Application onboarding
     variables:

@@ -16,12 +16,15 @@ spec:
             description: Getting configuration details of the target deployment server.
             script: |-
               from com.xebialabs.xlrelease.domain.environments import LiveDeployment
+              
               liveDeployment = deploymentServerApi.getLiveDeployment("${liveDeploymentId}")
               statusWebhookEventSource = configurationApi.getConfiguration(liveDeployment.eventSourceId)
+              
               applicationName = liveDeployment.getApplication().getTitle()
               environmentName = liveDeployment.getEnvironment().getTitle()
               environmentPath = liveDeployment.getEnvironment().getDeploymentTarget().getProperty("environmentPath")
-              environmentCiId = environmentPath.split("ciId=")[-1] if "ciId=" in environmentPath else ""
+              environmentCiId = (environmentPath.split("ciId=")[-1] if "ciId=" in environmentPath else "").rstrip(")")
+              
               releaseVariables['statusWebhookEventSourceId'] = statusWebhookEventSource.id
               releaseVariables['deployedApplication'] = environmentCiId + "/" + applicationName
               releaseVariables['applicationName'] = applicationName
@@ -54,13 +57,16 @@ spec:
             script: |-
               statusWebhookEventSource = configurationApi.getConfiguration("${statusWebhookEventSourceId}")
               liveDeploymentConfigs = statusWebhookEventSource.getProperty("liveDeploymentConfigs")
+              
               applicationName = "${applicationName}"
               environmentName = "${applicationName}"
+              
               configToDelete = None
               for config in liveDeploymentConfigs:
                   if config.getProperty("application") == applicationName and config.getProperty("environment") == environmentName:
                       configToDelete = config
                       break
+              
               if configToDelete:
                   liveDeploymentConfigs.remove(configToDelete)
                   statusWebhookEventSource.setProperty("liveDeploymentConfigs", liveDeploymentConfigs)
@@ -72,6 +78,7 @@ spec:
       - Remote Deploy
       - application
       - delete
+      - internal
     categories:
       - Application onboarding
     variables:

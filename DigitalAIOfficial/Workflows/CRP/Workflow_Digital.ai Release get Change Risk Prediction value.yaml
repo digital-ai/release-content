@@ -1,0 +1,74 @@
+---
+apiVersion: xl-release/v1
+kind: Templates
+metadata:
+  path: Workflows/CRP
+  home: Digital.ai - Official/Workflows/CRP
+spec:
+- template: Digital.ai Release get Change Risk Prediction value
+  description: Allows users to predict the potential risk value associated with a
+    specific project and model.
+  scheduledStartDate: 2024-09-24T09:00:00+05:30
+  phases:
+  - phase: Workflow tasks
+    tasks:
+    - name: Server Configuration
+      type: xlrelease.UserInputTask
+      description: Change Risk Prediction (CRP) server configuration.
+      variables:
+      - server
+    - name: Change Request details
+      type: xlrelease.UserInputTask
+      description: Please enter the required information below.
+      variables:
+      - crNumber
+      - projectName
+      - crpModel
+    - name: Get Change Risk Prediction value
+      type: crp.GetChangeRiskPrediction
+      changeRequestNumber: "${crNumber}"
+      projectName: "${projectName}"
+      CRPModel: "${crpModel}"
+      description: Retrieves the Change Risk Prediction (CRP) value for a specific
+        project and model.
+      variableMapping:
+        pythonScript.crpValue: "${crpValue}"
+        pythonScript.server: "${server}"
+  kind: WORKFLOW
+  variables:
+  - type: xlrelease.ReferenceVariable
+    key: server
+    showOnReleaseStart: false
+    label: "Change Risk Prediction: Server"
+    description: The change risk prediction server.
+    referencedType: crp.Server
+  - type: xlrelease.StringVariable
+    key: crNumber
+    showOnReleaseStart: false
+    label: CR Number
+    description: "The ServiceNow change request number. (ex: CHG0030007)"
+  - type: xlrelease.StringVariable
+    key: projectName
+    showOnReleaseStart: false
+    label: Project Name
+    description: "The name of the project for which the change risk prediction is\
+      \ to be retrieved. For example, 'ChangeFailure'."
+  - type: xlrelease.StringVariable
+    key: crpModel
+    showOnReleaseStart: false
+    label: CRP Model
+    description: "The name of the model used to calculate the change risk prediction.\
+      \ For example, 'CRPModel'."
+  - type: xlrelease.StringVariable
+    key: crpValue
+    requiresValue: false
+    showOnReleaseStart: false
+    label: Change Risk Prediction
+    description: Change risk prediction in percentage.
+  disableNotifications: true
+  author: admin
+  logo:
+    type: xlrelease.TemplateLogo
+    contentType: image/svg+xml
+    file: !file "template-logo/779b62fec558ed757f87a0cebd9f589405d83dbf/dai-logo.svg"
+  defaultTargetFolder: Digital.ai - Official/Workflow Executions

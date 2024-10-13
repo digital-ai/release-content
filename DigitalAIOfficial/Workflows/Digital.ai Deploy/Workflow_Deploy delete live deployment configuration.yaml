@@ -18,13 +18,16 @@ spec:
             script: |-
               from com.xebialabs.xlrelease.domain import Configuration
               from com.xebialabs.deployit.plugin.api.reflect import Type
+              
               statusWebhookEventSource = configurationApi.getConfiguration("${statusWebhookEventSourceId}")
               liveDeploymentConfigs = statusWebhookEventSource.getProperty("liveDeploymentConfigs")
+              
               configToDelete = None
               for config in statusWebhookEventSource.getProperty("liveDeploymentConfigs"):
                 if config.id == "${liveDeploymentConfigurationId}":
                  configToDelete = config
                  break
+              
               if configToDelete:
                 liveDeploymentConfigs.remove(configToDelete)
                 statusWebhookEventSource.setProperty("liveDeploymentConfigs", liveDeploymentConfigs)
@@ -35,6 +38,7 @@ spec:
             description: Deleting webhook configuration from Digital.ai Deploy
             script: |-
               from java.lang import Throwable
+              
               try:
                 autoconfigResponse = deploymentServerApi.autoconfigureDeploymentServer("${statusWebhookEventSourceId}")
                 releaseVariables['autoconfigMessage'] = autoconfigResponse.message
@@ -54,6 +58,7 @@ spec:
       - Remote Deploy
       - deployment server
       - delete
+      - internal
     categories:
       - Application onboarding
     variables:

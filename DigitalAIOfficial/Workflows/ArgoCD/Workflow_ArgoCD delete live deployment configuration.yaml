@@ -55,6 +55,7 @@ spec:
       - Remote ArgoCD
       - deployment server
       - delete
+      - internal
     categories:
       - Application onboarding
     variables:

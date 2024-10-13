@@ -98,6 +98,7 @@ spec:
     - Remote ArgoCD
     - deployment server
     - config
+    - internal
   categories:
     - Application onboarding
   variables:

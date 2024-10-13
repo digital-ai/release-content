@@ -1,0 +1,6 @@
+---
+apiVersion: xl-release/v1
+kind: Import
+spec:
+  imports:
+  - Workflow_Digital.ai Release get Change Risk Prediction value.yaml
