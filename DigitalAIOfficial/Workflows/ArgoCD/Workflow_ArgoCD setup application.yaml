@@ -15,7 +15,9 @@ spec:
         tasks:
           - name: Application input
             type: xlrelease.UserInputTask
-            description: Input for application information together with the ArgoCD server
+            description: |-
+              This workflow sets up Live Deployments with ArgoCD.
+              First, choose the ArgoCD server that you want to listen to, and provide the Git repository details.
             variables:
               - argoCDApiServer
               - gitRepo
@@ -228,7 +230,7 @@ spec:
               - remote
             applicationName: "${applicationName}"
         color: "#3d6c9e"
-      - phase: Autoconfiguration
+      - phase: Configuration
         tasks:
           - name: Live deployment configuration input
             type: xlrelease.UserInputTask
@@ -251,10 +253,10 @@ spec:
               liveDeploymentConfiguration = configurationApi.addConfiguration(liveDeploymentConfiguration)
               
               releaseVariables['liveDeploymentConfigurationId'] = liveDeploymentConfiguration.getId()
-          - name: Setup deployment server
+          - name: Setup ArgoCD
             type: xlrelease.ScriptTask
             description: Creates required configuration items in Release for connection
-              to deployment server.
+              to ArgoCD server.
             script: |-
               from com.xebialabs.xlrelease.api.v1.forms import DeploymentServerSetup
               from java.lang import Throwable
@@ -272,7 +274,7 @@ spec:
                 if "Cannot find active remote runner" in str(e):
                   raise Exception("Failed to find active remote runner for executing container script.")
                 raise
-          - name: Autoconfigure deployment server
+          - name: Configure ArgoCD
             type: xlrelease.ScriptTask
             description: Generates ArgoCD config map required to enable live event notifications.
             script: |-
@@ -288,7 +290,10 @@ spec:
                 if "Cannot find active remote runner" in str(e):
                   raise Exception("Failed to find active remote runner for executing container script.")
                 raise
-          - name: Autoconfig response
+        color: "#3d6c9e"
+      - phase: Confirmation
+        tasks:
+          - name: Configuration successful
             type: xlrelease.Task
             description: |-
               ${autoconfigMessage}

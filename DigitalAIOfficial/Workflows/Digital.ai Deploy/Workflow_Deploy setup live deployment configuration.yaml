@@ -85,7 +85,7 @@ spec:
           configurationApi.updateConfiguration("${statusWebhookEventSourceId}", statusWebhookEventSource)
     - name: Configure Digital.ai Deploy
       type: xlrelease.ScriptTask
-      description: "Configuring webhooks  on **${targetServerTitle}**"
+      description: "Configuring webhooks on **${targetServerTitle}**"
       script: |-
         from java.lang import Throwable
         

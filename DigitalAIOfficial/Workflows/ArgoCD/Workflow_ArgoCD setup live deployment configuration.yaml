@@ -10,7 +10,7 @@ spec:
   phases:
   - phase: Input
     tasks:
-    - name: Fetch details
+    - name: Get configuration details
       type: xlrelease.ScriptTask
       description: Fetches details about target server.
       script: |-
@@ -28,20 +28,27 @@ spec:
     - name: Live deployment configuration parameters
       type: xlrelease.UserInputTask
       description: |-
-        Add a name and applications filter for your live deployment configuration.
+        Enter a name for the configuration.
         
-        **Target: ${targetServerTitle}**
-        ${targetServerUrl}
+        Choose which deployments to listen to.
+        Please give the full path to the applications on the ArgoCD server you want to listen to.
+        For example:
+        > **Application**
+        > `Applications/My  folder/My app` --  only listen to deployments of **My app**  from **My folder**
+        >
+        You can also listen to multiple applications and environments by using regular expressions.
+        For example, the combination `Applications/.*` with `Environments/.*` will listen to all deployments: from any application to any environment.
+        
+        **Deployment server:** [${targetServerTitle}](${targetServerUrl})
       variables:
       - liveDeploymentConfigurationName
       - liveDeploymentConfigurationApplication
     color: '#3d6c9e'
-  - phase: Autoconfiguration
+  - phase: Configuration
     tasks:
-    - name: Create or update live deployment configuration
+    - name: Configure Digital.ai Release
       type: xlrelease.ScriptTask
-      description: Creates a LiveDeploymentConfiguration with provided inputs and
-        adds it to the list of configs on selected StatusWebhookEventSource.
+      description: "Configuring **${liveDeploymentConfigurationName}**"
       script: |-
         from com.xebialabs.xlrelease.domain import Configuration
         from com.xebialabs.deployit.plugin.api.reflect import Type
@@ -87,12 +94,12 @@ spec:
           raise
     color: '#3d6c9e'
   kind: WORKFLOW
-  categories:
-    - Application onboarding
   tags:
     - Remote ArgoCD
     - deployment server
     - config
+  categories:
+    - Application onboarding
   variables:
   - type: xlrelease.StringVariable
     key: statusWebhookEventSourceId
