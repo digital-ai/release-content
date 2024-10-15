@@ -20,6 +20,7 @@ spec:
         releaseVariables['targetServerTitle'] = sourceServer.title
         releaseVariables['targetServerUrl'] = sourceServer.url
         releaseVariables['statusWebhookEventSourceFolderId'] = statusWebhookEventSource.folderId
+        releaseVariables['liveDeploymentConfigurationName'] = sourceServer.title + " deployments"
 
         if "${liveDeploymentConfigurationId}":
           liveDeploymentConfiguration = configurationApi.getConfiguration("${liveDeploymentConfigurationId}")
@@ -30,14 +31,14 @@ spec:
       description: |-
         Enter a name for the configuration.
         
-        Choose which deployments to listen to.
-        Please give the full path to the applications on the ArgoCD server you want to listen to.
+        Choose which application to listen.
+        Please give the full name of the application on the ArgoCD server you want to listen to.
         For example:
         > **Application**
-        > `Applications/My  folder/My app` --  only listen to deployments of **My app**  from **My folder**
+        > `My app` --  only listen to application **My app**
         >
-        You can also listen to multiple applications and environments by using regular expressions.
-        For example, the combination `Applications/.*` with `Environments/.*` will listen to all deployments: from any application to any environment.
+        You can also listen to multiple applications by using regular expressions.
+        For example, `.*` will listen to all applications.
         
         **Deployment server:** [${targetServerTitle}](${targetServerUrl})
       variables:
@@ -110,13 +111,13 @@ spec:
   - type: xlrelease.StringVariable
     key: liveDeploymentConfigurationName
     showOnReleaseStart: false
-    label: Name
+    label: Configuration name
     description: The name of live deployment configuration
   - type: xlrelease.StringVariable
     key: liveDeploymentConfigurationApplication
     showOnReleaseStart: false
     label: Application
-    description: Application name/regex in ArgoCD server
+    description: Application name in ArgoCD. You may enter a regular expression here.
     value: .*
   - type: xlrelease.StringVariable
     key: targetServerTitle
