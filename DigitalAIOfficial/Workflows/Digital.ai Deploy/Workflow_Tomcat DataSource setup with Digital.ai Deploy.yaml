@@ -253,7 +253,7 @@ spec:
         liveDeploymentConfiguration = configurationApi.addConfiguration(liveDeploymentConfiguration)
         
         releaseVariables['liveDeploymentConfigurationId'] = liveDeploymentConfiguration.getId()
-    - name: Setup Release Configuration
+    - name: Setup Digital.ai Deploy
       type: xlrelease.ScriptTask
       description: Creates required configuration items in Release for connection
         to deployment server.
