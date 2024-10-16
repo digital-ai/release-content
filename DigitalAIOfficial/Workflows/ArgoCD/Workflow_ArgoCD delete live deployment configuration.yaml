@@ -12,9 +12,9 @@ spec:
     phases:
       - phase: Delete live deployment config
         tasks:
-          - name: Delete live deployment configuration
+          - name: Configure Digital.ai Release
             type: xlrelease.ScriptTask
-            description: Deletes deployment configuration from event source and from system.
+            description: Deleting Live Deployment configuration
             script: |-
               from com.xebialabs.xlrelease.domain import Configuration
               from com.xebialabs.deployit.plugin.api.reflect import Type
@@ -51,13 +51,13 @@ spec:
                 raise
         color: "#3d6c9e"
     kind: WORKFLOW
-    categories:
-      - Application onboarding
     tags:
       - Remote ArgoCD
       - deployment server
       - delete
       - internal
+    categories:
+      - Application onboarding
     variables:
       - type: xlrelease.StringVariable
         key: statusWebhookEventSourceId

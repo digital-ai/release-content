@@ -242,16 +242,16 @@ spec:
       ciID: "Infrastructure/${hostIdentifier}"
       ciProperty: password
     color: '#3d6c9e'
-  - phase: Autoconfigure Release
+  - phase: Configure Release
     tasks:
-    - name: Live deployment configuration input
+    - name: Live deployment configuration parameters
       type: xlrelease.UserInputTask
       description: Enter desired name for your application configuration.
       variables:
         - liveDeploymentConfigurationName
-    - name: Create live deployment configuration
+    - name: Configure Digital.ai Release
       type: xlrelease.ScriptTask
-      description: Creates configuration item to follow onboarded application.
+      description: "Configuring **${liveDeploymentConfigurationName}**"
       script: |-
         from com.xebialabs.xlrelease.domain import Configuration
         from com.xebialabs.deployit.plugin.api.reflect import Type
@@ -266,7 +266,7 @@ spec:
         liveDeploymentConfiguration = configurationApi.addConfiguration(liveDeploymentConfiguration)
         
         releaseVariables['liveDeploymentConfigurationId'] = liveDeploymentConfiguration.getId()
-    - name: Setup deployment server
+    - name: Setup Digital.ai Deploy
       type: xlrelease.ScriptTask
       description: Creates required configuration items in Release for connection
         to deployment server.
@@ -282,22 +282,21 @@ spec:
         statusWebhookEventSourceId = deploymentServerApi.setupDeploymentServer(deploymentServerSetup)
         
         releaseVariables['statusWebhookEventSourceId'] = statusWebhookEventSourceId
-    - name: Autoconfigure deployment server
+    - name: Configure Digital.ai Deploy
       type: xlrelease.ScriptTask
-      description: Generates Deploy configuration items required to enable live event
-        notifications.
+      description: "Configuring webhooks on **${deployServer}**"
       script: |-
         autoConfigResponse = deploymentServerApi.autoconfigureDeploymentServer("${statusWebhookEventSourceId}")
         
         releaseVariables['autoconfigMessage'] = autoConfigResponse.message
         releaseVariables['autoconfigUrl'] = autoConfigResponse.url
         releaseVariables['autoconfigDetails'] = autoConfigResponse.details
-    - name: Autoconfiguration response
+    - name: Configuration successful
       type: xlrelease.Task
       description: |-
         ${autoconfigMessage}
         
-        [View in Deploy](${autoconfigUrl})
+        [View configuration in Deploy](${autoconfigUrl})
     color: "#3d6c9e"
   kind: WORKFLOW
   categories:
