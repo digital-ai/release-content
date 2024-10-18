@@ -10,9 +10,9 @@ spec:
   phases:
   - phase: Input
     tasks:
-    - name: Fetch details
+    - name: Get configuration details
       type: xlrelease.ScriptTask
-      description: Fetches details about target server.
+      description: Getting configuration details of the target deployment server.
       script: |-
         statusWebhookEventSource = configurationApi.getConfiguration("${statusWebhookEventSourceId}")
         sourceServer = statusWebhookEventSource["sourceServer"]
@@ -20,35 +20,40 @@ spec:
         releaseVariables['targetServerTitle'] = sourceServer.title
         releaseVariables['targetServerUrl'] = sourceServer.url
         releaseVariables['statusWebhookEventSourceFolderId'] = statusWebhookEventSource.folderId
+        releaseVariables['liveDeploymentConfigurationName'] = sourceServer.title + " deployments"
 
         if "${liveDeploymentConfigurationId}":
           liveDeploymentConfiguration = configurationApi.getConfiguration("${liveDeploymentConfigurationId}")
           releaseVariables['liveDeploymentConfigurationName'] = liveDeploymentConfiguration.title
           releaseVariables['liveDeploymentConfigurationApplication'] = liveDeploymentConfiguration.application
           releaseVariables['liveDeploymentConfigurationEnvironment'] = liveDeploymentConfiguration.environment
-    - name: Live deployment configuration name
+    - name: Live deployment configuration parameters
       type: xlrelease.UserInputTask
       description: |-
-        Add a name for your live deployment configuration.
-
-        **Target: ${targetServerTitle}**
-        ${targetServerUrl}
+        Enter a name for the configuration.
+        
+        Choose which deployments to listen to.
+        Please give the full path to the applications and environments on the Deploy server you want to listen to.
+        For example:
+        > **Application**
+        > `Applications/My  folder/My app` --  only listen to deployments of **My app**  from **My folder**
+        >
+        > **Environment**
+        > `Environments/Targets/DEV` --  only listen to  deployments to the **DEV** environment in the **Targets** folder.
+        You can also listen to multiple applications and environments by using regular expressions.
+        For example, the combination `Applications/.*` with `Environments/.*` will listen to all deployments: from any application to any environment.
+        
+        **Deployment server:** [${targetServerTitle}](${targetServerUrl})
       variables:
       - liveDeploymentConfigurationName
-    - name: Live deployment configuration filter
-      type: xlrelease.UserInputTask
-      description: Input the Deploy application and environment filter to select applications from
-        the deployment server for live deployments.
-      variables:
       - liveDeploymentConfigurationApplication
       - liveDeploymentConfigurationEnvironment
     color: '#3d6c9e'
-  - phase: Autoconfiguration
+  - phase: Configuration
     tasks:
-    - name: Create or update live deployment configuration
+    - name: Configure Digital.ai Release
       type: xlrelease.ScriptTask
-      description: Creates a LiveDeploymentConfiguration with provided inputs and
-        adds it to the list of configs on selected StatusWebhookEventSource.
+      description: "Configuring **${liveDeploymentConfigurationName}**"
       script: |-
         from com.xebialabs.xlrelease.domain import Configuration
         from com.xebialabs.deployit.plugin.api.reflect import Type
@@ -78,9 +83,9 @@ spec:
           statusWebhookEventSource.setProperty("liveDeploymentConfigs", liveDeploymentConfigs)
 
           configurationApi.updateConfiguration("${statusWebhookEventSourceId}", statusWebhookEventSource)
-    - name: Configure Deploy CIs
+    - name: Configure Digital.ai Deploy
       type: xlrelease.ScriptTask
-      description: Creates webhook configuration CIs on Deploy Server.
+      description: "Configuring webhooks on **${targetServerTitle}**"
       script: |-
         from java.lang import Throwable
         
@@ -92,23 +97,25 @@ spec:
           if "Cannot find active remote runner" in str(e):
             raise Exception("Failed to find active remote runner for executing container script.")
           raise
-    - name: Check configured CIs
+    color: "#3d6c9e"
+  - phase: Confirmation
+    tasks:
+    - name: Configuration successful
       type: xlrelease.Task
       description: |-
-        Successfully configured Live Deployment Configuration.
 
         ${autoconfigMessage}
 
-        [View in Deploy](${autoconfigUrl})
+        [View configuration in Deploy](${autoconfigUrl})
     color: '#3d6c9e'
   kind: WORKFLOW
-  categories:
-    - Application onboarding
   tags:
     - Remote Deploy
     - deployment server
     - config
     - internal
+  categories:
+    - Application onboarding
   variables:
   - type: xlrelease.StringVariable
     key: statusWebhookEventSourceId
@@ -118,20 +125,20 @@ spec:
   - type: xlrelease.StringVariable
     key: liveDeploymentConfigurationName
     showOnReleaseStart: false
-    label: Name
+    label: Configuration name
     description: The name of live deployment configuration
   - type: xlrelease.StringVariable
     key: liveDeploymentConfigurationApplication
     showOnReleaseStart: false
     label: Application
-    description: Application/directory path/regex in Digital.ai Deploy
-    value: .*
+    description: Application path in Digital.ai Deploy. You may enter a regular expression here.
+    value: Applications/.*
   - type: xlrelease.StringVariable
     key: liveDeploymentConfigurationEnvironment
     showOnReleaseStart: false
     label: Environment
-    description: Environment/directory path/regex in Digital.ai Deploy
-    value: .*
+    description: Environment path in Digital.ai Deploy. You may enter a regular expression here.
+    value: Environments/.*
   - type: xlrelease.StringVariable
     key: targetServerTitle
     requiresValue: false

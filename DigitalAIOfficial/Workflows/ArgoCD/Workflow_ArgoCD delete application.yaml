@@ -12,8 +12,9 @@ spec:
     phases:
       - phase: Delete Application in ArgoCD
         tasks:
-          - name: Fetch details
+          - name: Get configuration details
             type: xlrelease.ScriptTask
+            description: Getting configuration details of the target deployment server.
             script: |-
               from com.xebialabs.xlrelease.domain.environments import LiveDeployment
               
@@ -24,23 +25,25 @@ spec:
               releaseVariables['statusWebhookEventSourceId'] = statusWebhookEventSource.id
               releaseVariables['applicationName'] = applicationName
               releaseVariables['argoCDApiServer'] = statusWebhookEventSource["sourceServer"].id
-          - name: Application Details
+          - name: Application details
             type: xlrelease.UserInputTask
-            description: Please enter the required information for application you want
-              to delete.
+            description: |-
+              Please enter the application you want to delete.
+              The application will also be deleted from Argo server
             variables:
               - applicationName
               - argoCDApiServer
           - name: Delete Application in ArgoCD
             type: argocd.RemoveApplication
+            description: "Deleting **${applicationName}**"
             variableMapping:
               server: "${argoCDApiServer}"
             capabilities:
               - remote
             applicationName: "${applicationName}"
-          - name: Delete deployment configuration
+          - name: Delete configuration
             type: xlrelease.ScriptTask
-            description: Deletes deployment configuration from event source if it matches
+            description: Deletes configuration from Digital.ai Release
               the deleted application.
             script: |-
               statusWebhookEventSource = configurationApi.getConfiguration("${statusWebhookEventSourceId}")

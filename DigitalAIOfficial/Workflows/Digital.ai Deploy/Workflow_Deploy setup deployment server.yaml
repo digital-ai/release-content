@@ -12,27 +12,26 @@ spec:
     phases:
       - phase: User Input
         tasks:
-          - name: Choose connection
+          - name: Select Deploy server
             type: xlrelease.UserInputTask
-            description: Choose Deploy server which you want to be configured.
+            description: |-
+              This workflow sets up Live Deployments with Digital.ai Deploy.
+              First, choose the Deploy server that you want to listen to.
             variables:
               - server
         color: "#3d6c9e"
-      - phase: Configure connection
+      - phase: Configuration
         tasks:
-          - name: Setup deployment server
+          - name: Configure Digital.ai Release
             type: xlrelease.ScriptTask
-            description: Creates required configuration items in Release for connection
-              to deployment server.
+            description: Configuring Release to process incoming deployment notifications
+              from Digital.ai Deploy
             script: |-
               from com.xebialabs.xlrelease.api.v1.forms import DeploymentServerSetup
               from java.lang import Throwable
-              
               folderId = getCurrentFolder().getId()
               serverId = releaseVariables['server']
-              
               deploymentServerSetup = DeploymentServerSetup(folderId, serverId)
-              
               try:
                 statusWebhookEventSourceId = deploymentServerApi.setupDeploymentServer(deploymentServerSetup)
                 releaseVariables['statusWebhookEventSourceId'] = statusWebhookEventSourceId
@@ -40,12 +39,12 @@ spec:
                 if "Cannot find active remote runner" in str(e):
                   raise Exception("Failed to find active remote runner for executing container script.")
                 raise
-          - name: Autoconfigure deployment server
+          - name: Configure Digital.ai Deploy
             type: xlrelease.ScriptTask
-            description: Generates Deploy CIs required to enable live event notifications.
+            description: Configuring Digital.ai Deploy to send deployment notifications
+              to Release.
             script: |-
               from java.lang import Throwable
-              
               try:
                 autoConfigResponse = deploymentServerApi.autoconfigureDeploymentServer("${statusWebhookEventSourceId}")
                 releaseVariables['autoconfigMessage'] = autoConfigResponse.message
@@ -56,22 +55,21 @@ spec:
                   raise Exception("Failed to find active remote runner for executing container script.")
                 raise
         color: "#3d6c9e"
-      - phase: Final
+      - phase: Confirmation
         tasks:
-          - name: Autoconfig response
+          - name: Configuration successful
             type: xlrelease.Task
             description: |-
               ${autoconfigMessage}
-              
-              [View in Deploy](${autoconfigUrl})
+              [View configuration in Deploy](${autoconfigUrl})
         color: "#3d6c9e"
     kind: WORKFLOW
-    categories:
-      - Create Deployment Server
     tags:
       - Remote Deploy
       - deployment server
       - new
+    categories:
+      - Create Deployment Server
     variables:
       - type: xlrelease.StringVariable
         key: statusWebhookEventSourceId

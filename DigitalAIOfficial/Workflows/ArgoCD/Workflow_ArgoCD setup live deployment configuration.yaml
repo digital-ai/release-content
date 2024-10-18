@@ -10,7 +10,7 @@ spec:
   phases:
   - phase: Input
     tasks:
-    - name: Fetch details
+    - name: Get configuration details
       type: xlrelease.ScriptTask
       description: Fetches details about target server.
       script: |-
@@ -20,33 +20,36 @@ spec:
         releaseVariables['targetServerTitle'] = sourceServer.title
         releaseVariables['targetServerUrl'] = sourceServer.url
         releaseVariables['statusWebhookEventSourceFolderId'] = statusWebhookEventSource.folderId
+        releaseVariables['liveDeploymentConfigurationName'] = sourceServer.title + " deployments"
 
         if "${liveDeploymentConfigurationId}":
           liveDeploymentConfiguration = configurationApi.getConfiguration("${liveDeploymentConfigurationId}")
           releaseVariables['liveDeploymentConfigurationName'] = liveDeploymentConfiguration.title
           releaseVariables['liveDeploymentConfigurationApplication'] = liveDeploymentConfiguration.application
-    - name: Live deployment configuration name
+    - name: Live deployment configuration parameters
       type: xlrelease.UserInputTask
       description: |-
-        Add a name for your live deployment configuration.
-
-        **Target: ${targetServerTitle}**
-        ${targetServerUrl}
+        Enter a name for the configuration.
+        
+        Choose which application to listen.
+        Please give the full name of the application on the ArgoCD server you want to listen to.
+        For example:
+        > **Application**
+        > `My app` --  only listen to application **My app**
+        >
+        You can also listen to multiple applications by using regular expressions.
+        For example, `.*` will listen to all applications.
+        
+        **Deployment server:** [${targetServerTitle}](${targetServerUrl})
       variables:
       - liveDeploymentConfigurationName
-    - name: Live deployment configuration filter
-      type: xlrelease.UserInputTask
-      description: Input the ArgoCD application filter to select applications from
-        the deployment server for live deployments.
-      variables:
       - liveDeploymentConfigurationApplication
     color: '#3d6c9e'
-  - phase: Autoconfiguration
+  - phase: Configuration
     tasks:
-    - name: Create or update live deployment configuration
+    - name: Configure Digital.ai Release
       type: xlrelease.ScriptTask
-      description: Creates a LiveDeploymentConfiguration with provided inputs and
-        adds it to the list of configs on selected StatusWebhookEventSource.
+      description: "Configuring **${liveDeploymentConfigurationName}**"
       script: |-
         from com.xebialabs.xlrelease.domain import Configuration
         from com.xebialabs.deployit.plugin.api.reflect import Type
@@ -92,13 +95,13 @@ spec:
           raise
     color: '#3d6c9e'
   kind: WORKFLOW
-  categories:
-    - Application onboarding
   tags:
     - Remote ArgoCD
     - deployment server
     - config
     - internal
+  categories:
+    - Application onboarding
   variables:
   - type: xlrelease.StringVariable
     key: statusWebhookEventSourceId
@@ -108,13 +111,13 @@ spec:
   - type: xlrelease.StringVariable
     key: liveDeploymentConfigurationName
     showOnReleaseStart: false
-    label: Name
+    label: Configuration name
     description: The name of live deployment configuration
   - type: xlrelease.StringVariable
     key: liveDeploymentConfigurationApplication
     showOnReleaseStart: false
     label: Application
-    description: Application name/regex in ArgoCD server
+    description: Application name in ArgoCD. You may enter a regular expression here.
     value: .*
   - type: xlrelease.StringVariable
     key: targetServerTitle
