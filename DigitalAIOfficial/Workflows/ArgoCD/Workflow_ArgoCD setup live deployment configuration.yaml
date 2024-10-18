@@ -134,4 +134,3 @@ spec:
     type: xlrelease.TemplateLogo
     contentType: image/png
     file: !file "template-logo/c9e27d5b1d5ed9738d58781439732acacd6b482d/argocd.svg"
-  defaultTargetFolder: Digital.ai - Official/Workflow Executions
