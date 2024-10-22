@@ -64,7 +64,7 @@ jobs:
               }
             );
             const yamlFiles = changedFiles
-              .filter(file => file.filename.endsWith('.yaml') || file.filename.endsWith('.yml'))
+              .filter(file => file.filename.endsWith('.yaml') || file.filename.endsWith('.yml') && !file.filename.startsWith('Releasefile.yaml'))
               .map(file => file.filename)
               .join('\n');
             return yamlFiles;
