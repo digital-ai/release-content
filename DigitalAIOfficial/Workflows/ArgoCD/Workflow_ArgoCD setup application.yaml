@@ -28,7 +28,7 @@ spec:
               import json
               
               repositoryType = releaseVariables["argoRepositoryType"]
-                            
+              
               if (repositoryType == "git"):
                 result = True
               else:
@@ -45,7 +45,7 @@ spec:
               import json
               
               repositoryType = releaseVariables["argoRepositoryType"]
-                            
+              
               if (repositoryType == "helm"):
                 result = True
               else:
@@ -181,11 +181,11 @@ spec:
               enableLfs: "${enableLfs}"
               server: "${argoCDApiServer}"
               password: "${repoPassword}"
+              repoType: "${argoRepositoryType}"
               insecure: "${insecure}"
               insecureIgnoreHostKey: "${insecureIgnoreHostKey}"
               inheritedCreds: "${inheritedCreds}"
               enableOCI: "${enableOCI}"
-              repoType: "${argoRepositoryType}"
             capabilities:
               - remote
             repo: "${gitRepo}"
@@ -314,7 +314,7 @@ spec:
               
               try:
                 autoConfigResponse = deploymentServerApi.autoconfigureDeploymentServer("${statusWebhookEventSourceId}")
-                
+              
                 releaseVariables['autoconfigMessage'] = autoConfigResponse.message
                 releaseVariables['autoconfigUrl'] = autoConfigResponse.url
                 releaseVariables['autoconfigDetails'] = autoConfigResponse.details
@@ -359,7 +359,6 @@ spec:
         description: Git repository from where application configuration will be fetched
       - type: xlrelease.StringVariable
         key: path
-        requiresValue: false
         showOnReleaseStart: false
         label: Path
         description: Path inside git repository where configuration is located
@@ -372,7 +371,7 @@ spec:
         value: HEAD
       - type: xlrelease.StringVariable
         key: chart
-        requiresValue: false
+        showOnReleaseStart: false
         label: Helm chart
         description: Helm chart name
       - type: xlrelease.StringVariable
