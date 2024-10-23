@@ -19,6 +19,21 @@ spec:
               First, choose the Deploy server that you want to listen to.
             variables:
               - server
+          - name: Test connection
+            type: xlrelease.ScriptTask
+            description: Test connection to deployment server.
+            script: |-
+              from com.xebialabs.xlrelease.views import ConfigurationStatusResponse
+              from java.lang import Throwable
+              
+              serverId = releaseVariables['server']
+              
+              statusResponse = configurationApi.checkStatus(serverId)
+            
+              if not statusResponse.success:
+                if "Cannot find active remote runner" in statusResponse.errorText:
+                  raise Exception("Failed to find active remote runner for executing container script.")
+                raise Exception(statusResponse.errorText)
         color: "#3d6c9e"
       - phase: Configuration
         tasks:
