@@ -102,4 +102,3 @@ spec:
       type: xlrelease.TemplateLogo
       contentType: image/svg+xml
       file: !file "template-logo/97662a62108c2b1e1875c8e18f6d1c72a013d33c/deploy.svg"
-    defaultTargetFolder: Digital.ai - Official/Workflow Executions
