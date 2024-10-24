@@ -20,10 +20,40 @@ spec:
               First, choose the ArgoCD server that you want to listen to, and provide the Git repository details.
             variables:
               - argoCDApiServer
+              - argoRepositoryType
+          - name: Application input (git)
+            type: xlrelease.UserInputTask
+            description: Input for application information together with the ArgoCD server
+            precondition: |-
+              import json
+              
+              repositoryType = releaseVariables["argoRepositoryType"]
+              
+              if (repositoryType == "git"):
+                result = True
+              else:
+                result = False
+            variables:
               - gitRepo
               - path
               - revision
+              - clusterUrl
+          - name: Application input (helm)
+            type: xlrelease.UserInputTask
+            description: Input for application information together with the ArgoCD server
+            precondition: |-
+              import json
+              
+              repositoryType = releaseVariables["argoRepositoryType"]
+              
+              if (repositoryType == "helm"):
+                result = True
+              else:
+                result = False
+            variables:
+              - gitRepo
               - chart
+              - revision
               - clusterUrl
           - name: Check if application exists
             type: argocd.CheckIfApplicationExists
@@ -40,6 +70,7 @@ spec:
               - remote
             gitRepo: "${gitRepo}"
             path: "${path}"
+            chart: "${chart}"
             branch: "${revision}"
             clusterUrl: "${clusterUrl}"
         color: "#3d6c9e"
@@ -150,6 +181,7 @@ spec:
               enableLfs: "${enableLfs}"
               server: "${argoCDApiServer}"
               password: "${repoPassword}"
+              repoType: "${argoRepositoryType}"
               insecure: "${insecure}"
               insecureIgnoreHostKey: "${insecureIgnoreHostKey}"
               inheritedCreds: "${inheritedCreds}"
@@ -282,7 +314,7 @@ spec:
               
               try:
                 autoConfigResponse = deploymentServerApi.autoconfigureDeploymentServer("${statusWebhookEventSourceId}")
-                
+              
                 releaseVariables['autoconfigMessage'] = autoConfigResponse.message
                 releaseVariables['autoconfigUrl'] = autoConfigResponse.url
                 releaseVariables['autoconfigDetails'] = autoConfigResponse.details
@@ -339,7 +371,7 @@ spec:
         value: HEAD
       - type: xlrelease.StringVariable
         key: chart
-        requiresValue: false
+        showOnReleaseStart: false
         label: Helm chart
         description: Helm chart name
       - type: xlrelease.StringVariable
@@ -595,6 +627,17 @@ spec:
         key: autoconfigUrl
         requiresValue: false
         showOnReleaseStart: false
+      - type: xlrelease.StringVariable
+        key: argoRepositoryType
+        showOnReleaseStart: false
+        label: Argo Repository Type
+        description: Type of Application repository
+        valueProvider:
+          type: xlrelease.ListOfStringValueProviderConfiguration
+          values:
+            - git
+            - helm
+        value: git
     disableNotifications: true
     author: Digital.ai
     logo:
