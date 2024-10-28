@@ -21,7 +21,6 @@ spec:
             type: xlrelease.ScriptTask
             description: Test connection to deployment server.
             script: |-
-              from com.xebialabs.xlrelease.views import ConfigurationStatusResponse
               from java.lang import Throwable
               
               serverId = releaseVariables['server']
