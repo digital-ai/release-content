@@ -331,7 +331,7 @@ spec:
         key: path
         showOnReleaseStart: false
         label: Path or Chart
-        description: Path inside git repository where configuration is located
+        description: Path inside git repository where configuration is located or name of chart in helm repository
       - type: xlrelease.StringVariable
         key: revision
         showOnReleaseStart: false
