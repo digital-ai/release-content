@@ -21,38 +21,8 @@ spec:
             variables:
               - argoCDApiServer
               - argoRepositoryType
-          - name: Application input (git)
-            type: xlrelease.UserInputTask
-            description: Input for application information together with the ArgoCD server
-            precondition: |-
-              import json
-              
-              repositoryType = releaseVariables["argoRepositoryType"]
-              
-              if (repositoryType == "git"):
-                result = True
-              else:
-                result = False
-            variables:
               - gitRepo
               - path
-              - revision
-              - clusterUrl
-          - name: Application input (helm)
-            type: xlrelease.UserInputTask
-            description: Input for application information together with the ArgoCD server
-            precondition: |-
-              import json
-              
-              repositoryType = releaseVariables["argoRepositoryType"]
-              
-              if (repositoryType == "helm"):
-                result = True
-              else:
-                result = False
-            variables:
-              - gitRepo
-              - chart
               - revision
               - clusterUrl
           - name: Check if application exists
@@ -70,7 +40,6 @@ spec:
               - remote
             gitRepo: "${gitRepo}"
             path: "${path}"
-            chart: "${chart}"
             branch: "${revision}"
             clusterUrl: "${clusterUrl}"
         color: "#3d6c9e"
@@ -219,6 +188,7 @@ spec:
             variableMapping:
               skipValidation: "${skipSchemaValidation}"
               server: "${argoCDApiServer}"
+              repoType: "${argoRepositoryType}"
               replace: "${replace}"
               autoSync: "${autoSync}"
               autoCreateNamespace: "${autoCreateNamespace}"
@@ -233,7 +203,7 @@ spec:
             project: "${projectName}"
             url: "${gitRepo}"
             path: "${path}"
-            chart: "${chart}"
+            chart: "${path}"
             revision: "${revision}"
             namespace: "${namespace}"
         color: "#3d6c9e"
@@ -360,8 +330,8 @@ spec:
       - type: xlrelease.StringVariable
         key: path
         showOnReleaseStart: false
-        label: Path
-        description: Path inside git repository where configuration is located
+        label: Path or Chart
+        description: Path inside git repository where configuration is located or name of chart in helm repository
       - type: xlrelease.StringVariable
         key: revision
         showOnReleaseStart: false
@@ -369,11 +339,6 @@ spec:
         description: "Git - can be commit, tag, or branch. Helm - a semver tag for the\
       \ Chart's version"
         value: HEAD
-      - type: xlrelease.StringVariable
-        key: chart
-        showOnReleaseStart: false
-        label: Helm chart
-        description: Helm chart name
       - type: xlrelease.StringVariable
         key: clusterUrl
         showOnReleaseStart: false
