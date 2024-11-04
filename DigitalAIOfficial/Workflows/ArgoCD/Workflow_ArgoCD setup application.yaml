@@ -181,10 +181,52 @@ spec:
               - applyOutOfSyncOnly
               - prunePropagationPolicy
               - replace
-          - name: Create ArgoCD application
+          - name: Create ArgoCD Git application
             type: argocd.CreateApplication
             description: "Deploys ArgoCD application with given information about application\
         \ name, project, git repo, path and branch."
+            precondition: |-
+              import json
+              
+              repositoryType = releaseVariables["argoRepositoryType"]
+              
+              if (repositoryType == "git"):
+                result = True
+              else:
+                result = False
+            variableMapping:
+              skipValidation: "${skipSchemaValidation}"
+              server: "${argoCDApiServer}"
+              repoType: "${argoRepositoryType}"
+              replace: "${replace}"
+              autoSync: "${autoSync}"
+              autoCreateNamespace: "${autoCreateNamespace}"
+              pruneLast: "${pruneLast}"
+              prunePropagationPolicy: "${prunePropagationPolicy}"
+              pruneResources: "${prune}"
+              selfHeal: "${selfHeal}"
+              applyOutOfSyncOnly: "${applyOutOfSyncOnly}"
+            capabilities:
+              - remote
+            appName: "${applicationName}"
+            project: "${projectName}"
+            url: "${gitRepo}"
+            path: "${path}"
+            revision: "${revision}"
+            namespace: "${namespace}"
+          - name: Create ArgoCD Helm application
+            type: argocd.CreateApplication
+            description: "Deploys ArgoCD application with given information about application\
+        \ name, project, git repo, path and branch."
+            precondition: |-
+              import json
+              
+              repositoryType = releaseVariables["argoRepositoryType"]
+              
+              if (repositoryType == "helm"):
+                result = True
+              else:
+                result = False
             variableMapping:
               skipValidation: "${skipSchemaValidation}"
               server: "${argoCDApiServer}"
