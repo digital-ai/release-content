@@ -1,0 +1,113 @@
+# Exported from:        http://admins-MacBook-Pro.local:5516/
+# Release version:      24.1.0
+# Date created:         Tue Mar 04 11:06:04 CET 2025
+
+---
+apiVersion: xl-release/v1
+kind: Templates
+metadata:
+  path: /
+  home: Samples & Tutorials
+spec:
+- template: Configure Release
+  scheduledStartDate: 2025-02-19T09:00:00+01:00
+  phases:
+  - phase: Setup mail server
+    tasks:
+    - name: Configure email address and mail server
+      type: xlrelease.Task
+      description: |-
+        In order to use Digital.ai Release effectively, a mail server has to be configured.
+
+        This task consists of two steps:
+
+        1. To check if mails are sent correctly, configure the email address of the `admin` user. Go to the [Profile](#/profile) and enter the email address. Then press the **Save** button.
+        2. Configure the SMTP server. Go to the [SMTP Server](#/smtp) screen and enter the relevant settings. Press **Save** to confirm.
+
+        Now complete this task by pressing the **Complete** button and confirming. An email will be sent and we will confirm its delivery in the next task.
+      owner: admin
+      waitForScheduledStartDate: false
+    - name: Check email
+      type: xlrelease.GateTask
+      description: |-
+        After correctly configuring the SMTP server and email address for 'admin', the admin user should have received an email that announces the start of this task, 'Check email'.
+
+        If this is the case, check the box below and Complete this task.
+
+        If not, here are some ways to troubleshoot.
+        * Check the logs in `[DIGITAL_AI_RELEASE_SERVER]/log/xl-release.log` for errors
+        * Reconfigure the SMTP server settings in Digital.ai Release
+        * Fail this task and Retry it. Both actions should trigger an email.
+      owner: admin
+      waitForScheduledStartDate: false
+      conditions:
+      - name: Got email that 'Check email' task was started
+        type: xlrelease.GateCondition
+    color: "#3D6C9E"
+  - phase: Setup Users & Security
+    tasks:
+    - name: Configure users
+      type: xlrelease.Task
+      description: |-
+        Digital.ai Release is a collaboration tool, so we need to get some users into the system. There are two ways to set up the users. This task explains how to configure users directly in Release.
+
+        It is also possible to integrate with Active Directory or another type of LDAP server. See the [Administration Manual](https://docs.digital.ai/bundle/devops-release-version-v.25.1/page/release/how-to/configure-ldap-security-for-xl-release.html) for more details on this subject.
+
+        ### Creating users
+
+        Go to the [Users](#/users) screen and add a user. You can specify the email address right away.
+
+        After pressing Save, the newly created user can log in.
+      owner: admin
+      waitForScheduledStartDate: false
+    - name: Define roles & global permissions
+      type: xlrelease.Task
+      description: |-
+        ### Roles
+
+        Users can be grouped in **Roles** to assign them fine-grained permissions.
+
+        Go to the [Roles](#/roles) screen to create roles and assign users to them. If you are connected to Active Directory or LDAP, you can also add LDAP groups to roles.
+
+        Define a role **Release Managers**, and add all users that will be using Release as a release manager.
+
+        Please use the name "Release Managers", so the standard templates will be available to them.
+
+        After defining the role, press **Save**
+
+        ### Global permissions
+
+        Go the [Permissions](#/permissions) screen to assign global permissions to the roles.
+
+        To the Release Managers role, assign the permissions **Create Template** and **Create Release** (at least).
+
+        Press Save to apply the changes.
+
+        ### Release permissions
+
+        On the release level, permissions are defined on **teams**. Teams are like roles, but specific to a particular release. Teams and team permissions can be configured on a release or on a release template.
+
+        Teams may contain both users and roles.
+      owner: admin
+      waitForScheduledStartDate: false
+    color: "#3D6C9E"
+  - phase: Deploy integration
+    tasks:
+    - name: Define Digital.ai Deploy Servers
+      type: xlrelease.Task
+      description: |-
+        _Skip this task if no Deploy integration is needed_
+
+        To enable Deploy integration, go to the [Digital.ai Deploy Servers](#/configuration) screen and add a new Server.
+
+        Enter the URL of the Deploy server and provide credentials of a Deploy user with at least read permissions (in Deploy).
+
+        When done, press the **Test** button to validate the connection.
+
+        If the connection is valid, press **Save** so this Deploy server can be used in Release.
+      owner: admin
+      waitForScheduledStartDate: false
+    color: "#498500"
+  tags:
+  - tutorial
+  riskProfile: Default risk profile

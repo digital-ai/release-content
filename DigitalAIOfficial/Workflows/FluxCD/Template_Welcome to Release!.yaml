@@ -1,0 +1,118 @@
+# Exported from:        http://admins-MacBook-Pro.local:5516/
+# Release version:      24.1.0
+# Date created:         Tue Mar 04 11:06:04 CET 2025
+
+---
+apiVersion: xl-release/v1
+kind: Templates
+metadata:
+  path: /
+  home: Samples & Tutorials
+spec:
+- template: Welcome to Release!
+  scheduledStartDate: 2025-02-19T09:00:00+01:00
+  phases:
+  - phase: Introduction
+    tasks:
+    - name: Welcome! Click me to get started
+      type: xlrelease.Task
+      description: |-
+        ## Welcome to Digital.ai Release!
+
+        This introduction will help you to understand the Digital.ai Release product.
+
+        This card is the first task in the **Welcome to Digital.ai Release!** procedure. It has been assigned to '${user}', and that's why you are seeing it now.
+
+        When you have read this, click on **Complete** to advance to the next task.
+
+        Please note - if you would no longer like to have new users receive this welcome release, you can simply delete the **Welcome to Digital.ai Release** template from your **Samples & Tutorials** folder.
+      owner: "${user}"
+      waitForScheduledStartDate: false
+    - name: Understanding tasks and releases. (Click me to continue)
+      type: xlrelease.Task
+      description: |-
+        The **Tasks** screen shows a list of all active tasks for the current user -- presenting a list of "to do" items.
+
+        All tasks are steps in a **release**.
+
+        Releases are at the heart of Digital.ai Release. A release represents a number of tasks with people working on it. Release allows you to plan, track and execute releases automatically and acts as a single source of truth for all people involved to make the release a success.
+
+        A **task** can be either some activity done by a person, or an automated task that will integrate with other systems or run a script. Release makes it easy to model your current process and to transition gradually to a more automated procedure.
+
+        There are two types of tasks that are assigned to people: the manual task (such as this one), which indicates that something has to be done by somebody.
+
+        The other one is a **Gate**, which indicates a checkpoint in the release, i.e. a set of conditions that need to be met for the release to continue.
+
+        Click on **Complete** on this task to see an example of a Gate task.
+      owner: "${user}"
+      waitForScheduledStartDate: false
+    - name: "Gates: checkpoints in a release"
+      type: xlrelease.GateTask
+      description: |-
+        This task is a 'gate': a set of conditions that need to be completed before we can continue.
+
+        Gates are similar to manual tasks, but have some additional properties
+        * You can add conditions
+        * You can add dependencies on other releases
+        * Gates are colored red to stand out in the Release Flow editor and overviews.
+
+        Tick the boxes below to indicate the progress on this Gate task. When all boxes are ticked, you may complete the task.
+      owner: "${user}"
+      waitForScheduledStartDate: false
+      conditions:
+      - name: Step 1
+        type: xlrelease.GateCondition
+      - name: Step 2
+        type: xlrelease.GateCondition
+    - name: Task assignment & teams
+      type: xlrelease.Task
+      description: |-
+        Tasks are assigned to users. If a task is assigned to you and it is active (ie. needs to be done now) it will show up in the Tasks overview screen that is shown when you log in.
+
+        Tasks can also be assigned to **Teams**. The release manager defines the teams in a release. As the name implies, there can be several people in a team. If a task is assigned to a team, it means that it is a joint responsibility to complete the task.
+
+        If a task is assigned to a team you're in, but not to you directly, it will still show up in your task overview.
+      owner: "${user}"
+      waitForScheduledStartDate: false
+    - name: Skipping and failing a task
+      type: xlrelease.Task
+      description: |-
+        There are three ways to finish a task.
+
+        * **Complete**. Marks the task as done and advances to the next task in the release.
+        * **Skip**. No work has been done to complete this task, but it can be ignored. The release flow advances to the next task in the release. The user must comment on why this task was skipped.
+        * **Fail**. The task can't be completed for some reason. The release is stalled and the task is now assigned to the Release Admin, the person responsible for this release. The Release Admin has to decide what to do next: skip this task or assign it to somebody else and retry it.
+
+        Now press **Skip** to go to the next topic.
+      owner: "${user}"
+      waitForScheduledStartDate: false
+    - name: Continue with the tour
+      type: xlrelease.Task
+      description: |-
+        We're now at the end of the general introduction for Digital.ai Release users.
+
+        You're now all set to work on tasks in Release.
+
+        If you're interested in using Digital.ai Release as a release manager, please continue with the guided tour. Like this introduction, the guided tour is an actual release in Release.
+
+        To start the tour, do the following:
+        * Go to the [Templates](#/templates) page. (If the Templates page is not accessible, please consult with the administrator of the Digital.ai Release installation.)
+        * Locate the template called **Guided tour for release managers**
+        * Click on **New release from template**
+        * In the **Create new release** page, enter a release name and your login name for the `user` variable at the bottom of the page.
+        * Press **Create**
+
+        You will be taken to the Release Flow editor, showing all tasks in the Guided Tour release. The tour is now ready to be started.
+
+        * Click on **Start Release** and the tour will begin.
+      owner: "${user}"
+      waitForScheduledStartDate: false
+    color: "#3D6C9E"
+  tags:
+  - tutorial
+  variables:
+  - type: xlrelease.StringVariable
+    key: user
+    label: Owner
+    description: The owner of the item.
+  riskProfile: Default risk profile

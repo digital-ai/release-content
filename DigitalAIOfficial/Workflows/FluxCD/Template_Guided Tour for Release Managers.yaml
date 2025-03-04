@@ -1,0 +1,208 @@
+# Exported from:        http://admins-MacBook-Pro.local:5516/
+# Release version:      24.1.0
+# Date created:         Tue Mar 04 11:06:04 CET 2025
+
+---
+apiVersion: xl-release/v1
+kind: Templates
+metadata:
+  path: /
+  home: Samples & Tutorials
+spec:
+- template: Guided Tour for Release Managers
+  scheduledStartDate: 2025-02-19T09:00:00+01:00
+  phases:
+  - phase: Designing a release
+    tasks:
+    - name: Click "Start Release" to get going
+      type: xlrelease.GateTask
+      description: |-
+        To get started, click **Start Release** in the Release Flow editor. When a release is created, it is not automatically started to give the Release Admin the opportunity to configure it.
+
+        After confirmation, an orange triangle will appear on this task to indicate that it is active.
+
+        Complete this task to advance to the next one. Note that you cannot complete a task before the release starts.
+      owner: "${user}"
+      waitForScheduledStartDate: false
+    - name: Phases & task execution
+      type: xlrelease.Task
+      description: |-
+        You should now be in the Release Flow editor, the screen showing all tasks in a release.
+
+        You can go to the Release Flow editor by clicking the **View in Release** link of a task in the task overview, or by clicking a release name in the **Releases > Overview** screen.
+
+        The Release Flow editor is where the release procedure is defined. You will see all tasks here, grouped into columns called _phases_. These represent the high-level parts of a release.
+
+        The tasks in a phase are executed from top to bottom. When all tasks in a phase are completed, the phase completes and we advance to the next phase. The phases are executed from left to right.
+      owner: "${user}"
+      waitForScheduledStartDate: false
+    - name: Using the Release Flow editor to design a release
+      type: xlrelease.Task
+      description: |-
+        The Release Flow editor is the nerve center of your release.
+
+        Here, you can add tasks, remove tasks, and drag-and-drop tasks.
+
+        You can model your release procedure as a general blueprint for how releases are done from the [Templates](#/templates) screen. You create actual releases from a template. When a release is in progress, you can still edit it, provided you have the right permissions.
+
+        If reality gets in the way of the process, you can still add tasks and phases, and change or remove them. Digital.ai Release keeps track of all changes in the release in the Activity Log. This is an audit trail that serves as a single source of truth for who did what, and when.
+      owner: "${user}"
+      waitForScheduledStartDate: false
+    - name: Task types
+      type: xlrelease.Task
+      description: |-
+        To add a task to a phase in a release, click the **Add Task** link at the bottom of the phase. After you add a task, you can drag-and-drop it into the desired position.
+
+        ### Manual tasks
+        Manual tasks must be performed by a person. After you are done with the task, you complete it by clicking **Complete**.
+        * **Manual task** - A task with a description of what should be done.
+        * **Gate task** - A checkpoint in a release flow. Gate tasks can contain checklists of sub-tasks to be done. Gate tasks are marked by a red border.
+
+        ### Automated tasks
+        Automated tasks are executed and completed by Digital.ai Release. No human intervention is required.
+        * **Notification** - Send a custom email from Digital.ai Release.
+        * **Digital.ai Deploy** - Perform a deployment using Digital.ai Deploy.
+        * ** Script** - Run a custom script written in Python.
+        * **Jira tasks** - Create and update tickets in Atlassian Jira.
+        * **Webhook** - Call a web service using XML or JSON without writing a script.
+
+        ### Execution
+        * **Parallel Group** - Execute Digital.ai Release tasks in parallel.
+
+        ### Exercise
+        Add a notification task and configure it to send an email to yourself. Use drag-and-drop to place it somewhere in the release.
+      owner: "${user}"
+      waitForScheduledStartDate: false
+    - name: Teams
+      type: xlrelease.Task
+      description: |-
+        Teams are used to group people per release.
+
+        You can use teams to:
+        * **Assign tasks to a team**. This is especially useful when designing a template.
+        * **Configure permissions**. With Digital.ai Release, you can apply fine-grained security to teams up to the individual release level.
+
+        ### Configuring teams
+        Select **Teams** from the **Show** menu at the top of the Release Flow editor to configure teams.
+
+        Here, you can add and remove teams for a certain release. Teams can contain people (identified by their log-in name) or roles (see **Settings > Roles**).
+
+        ### Standard teams
+
+        There are two standard teams:
+
+        * **Template Owner** _(only in templates)_ - Used to configure security on templates.
+        * **Release Admin** - Contains the people who are responsible for the running release. They get extra notifications; for example, when a task fails and the release is stalled.
+
+        ### Security
+
+        To configure security on teams, select **Permissions** from the **Show** menu at the top of the Release Flow editor.
+
+        ### Exercise
+        Create a team called 'Release managers' and add yourself to it. Assign the next task to this team, and remove the assignment to yourself. Then complete this task.
+      owner: "${user}"
+      waitForScheduledStartDate: false
+    color: "#3D6C9E"
+  - phase: Running a release
+    tasks:
+    - name: Releases & Templates
+      type: xlrelease.Task
+      description: |-
+        **Releases** are at the heart of Digital.ai Release. A release represents a number of tasks with people working on it. Digital.ai Release allows you to plan, track, and execute releases automatically and acts as a single source of truth for everyone involved to make the release a success.
+
+        A **template** is a blueprint for a release. It can be used to start various releases that have the same flow. It is very similar to a release, but some functionality is different because a template will never be executed directly. For example, there are no start or end dates on a template; most tasks will be assigned to teams rather than actual people; and variables will be used as placeholders for information that differs from release to release, like the version number of an application.
+
+        You can see releases that are currently running on the [Release Overview](#/releases) screen.
+        You can find the list of available templates on the [Template Overview](#/templates) screen.
+
+        New releases are started from a template. Simply click **New Release** and fill in the name, start and end date, and other relevant properties to create a new release.
+      owner: "${user}"
+      waitForScheduledStartDate: false
+    - name: Release Dashboard
+      type: xlrelease.Task
+      description: |-
+        The **Release Dashboard** is a dashboard of a running release. It shows vital statistics about progress, task assignment, and warnings.
+
+        Go to the Release Dashboard by selecting **Release Dashboard** from the **Show** menu at the top of the Release Flow editor.
+
+        Take a look at the Release Dashboard of this release now, then complete this task.
+      owner: "${user}"
+      waitForScheduledStartDate: false
+    - name: Activity Log
+      type: xlrelease.Task
+      description: |-
+        For a detailed audit trail of who did what and when on a release, select **Activity Logs** from the **Show** menu at the top of the Release Flow editor.
+
+        Take a at the Activity Logs of this release now, then complete this task.
+      owner: "${user}"
+      waitForScheduledStartDate: false
+    color: "#498500"
+  - phase: Advanced topics
+    tasks:
+    - name: Parallel tasks
+      type: xlrelease.Task
+      description: |-
+        When designing a release in the Release Flow editor, you will have noticed that the default flow in a phase is serial: all tasks are executed in order, one after the other.
+
+        The **Parallel group** allows you to model tasks that have to be executed in parallel.
+
+        The Parallel group is a container for a bunch of tasks that are to be executed simultaneously.
+
+        In the release editor, simply add a Parallel group using the **Add task** link. Then you can either drag existing tasks into the parallel group, or click on the inner Add task link to create a new task in the parallel group.
+
+        The next tasks in this release will be executed in parallel. Complete this task and you will notice that more than one task are shown in this release in the [Task overview](#/tasks).
+      owner: "${user}"
+      waitForScheduledStartDate: false
+    - name: Complete the tasks in any order
+      type: xlrelease.ParallelGroup
+      waitForScheduledStartDate: false
+      tasks:
+      - name: Calendar
+        type: xlrelease.Task
+        description: |-
+          The [Calendar](#/releases/calendar) shows an overview of all releases on a month-by-month basis.
+
+          To navigate between months, use the buttons on top or the collapsible navigation panel on the left.
+
+          The filter options give you control over which releases are shown on the calendar.
+
+          * Active releases - Show releases that are currently in progress.
+          * Planned releases - Show planned releases that have not started yet.
+          * Completed releases -Show releases that have been completed or that were aborted.
+          * My releases - Show releases for which you are the owner.
+          * Only flagged - Show releases that are flagged with a status message to indicate that they need attention or are at risk.
+        owner: "${user}"
+        waitForScheduledStartDate: false
+      - name: Planner
+        type: xlrelease.Task
+        description: |-
+          The **Planner** shows an interactive Gantt chart that allows you to view and edit the timing of phases and tasks on the level that you desire.
+
+          Access the Planner by selecting **Planner** from the **Show** menu at the top of the Release Flow editor.
+
+          To do detailed time planning, you can move and resize the tasks in the diagram. You can set the due date of a task by dragging its right edge, and set the scheduled start date of a task by dragging its left edge. Note that setting a scheduled start date on a task means that the task will not start before this date is reached, even if the preceding task has finished. You can also move the whole task by dragging it; this will update scheduled start date and due date but keep the task's duration the same.
+
+          You can do more sophisticated in a parallel group. By default, all tasks in a parallel group start when the group is started and are executed in parallel. The planner tool allows you to do express dependencies among these tasks explicitly.
+        owner: "${user}"
+        waitForScheduledStartDate: false
+      - name: Using variables (everywhere!)
+        type: xlrelease.Task
+        description: |-
+          When creating release templates, you will add tasks that contain information that can vary based on the release. Also, you may have one generic release template that can be used for the release process of several applications. This reusability is an important feature of of Digital.ai Release because it ensures that you create a template once, and then reuse that template for each application release.
+
+          For example, let's say you've completed your release template, capturing all of the tasks required to release your application. In the template, the application name is the only unique value that needs to be defined for each release. This is where variables come into play. A variable allows you to put a placeholder in tasks and replace it with the actual application name in the release.
+
+          You can use variables in many areas of Digital.ai Release, including titles, descriptions, and fields. You use variables as placeholders when you are creating the template and define their values when the release starts or while the release is running.
+
+          Now that you understand more about variables, you can see that a best practice for creating a template in Digital.ai Release is to look for areas of overlap in your application release processes. If you can consolidate different application release templates into one template using variables, you'll help minimize the overhead your team needs to manage many release templates.
+        owner: "${user}"
+        waitForScheduledStartDate: false
+    color: "#FF9E49"
+  tags:
+  - tutorial
+  variables:
+  - type: xlrelease.StringVariable
+    key: user
+    label: Owner
+    description: The owner of the item.
+  riskProfile: Default risk profile

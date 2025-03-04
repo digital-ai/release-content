@@ -1,8 +1,14 @@
+# Exported from:        http://admins-MacBook-Pro.local:5516/
+# Release version:      24.1.0
+# Date created:         Tue Mar 04 11:06:04 CET 2025
+
 ---
 apiVersion: xl-release/v1
 kind: Import
 spec:
   imports:
-  - Workflow_FluxCD setup deployment server.yaml
-  - Workflow_FluxCD setup live deployment configuration.yaml
-  - Workflow_FluxCD delete live deployment configuration.yaml
+  - Notifications.yaml
+  - Template_Configure Release.yaml
+  - Template_Guided Tour for Release Managers.yaml
+  - Template_Sample Release Template.yaml
+  - Template_Welcome to Release!.yaml

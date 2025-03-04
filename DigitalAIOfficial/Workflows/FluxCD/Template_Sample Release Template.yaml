@@ -1,0 +1,173 @@
+# Exported from:        http://admins-MacBook-Pro.local:5516/
+# Release version:      24.1.0
+# Date created:         Tue Mar 04 11:06:04 CET 2025
+
+---
+apiVersion: xl-release/v1
+kind: Templates
+metadata:
+  path: /
+  home: Samples & Tutorials
+spec:
+- template: Sample Release Template
+  description: Major and minor release template using manual deployments.
+  scheduledStartDate: 2025-02-19T09:00:00+01:00
+  phases:
+  - phase: QA
+    tasks:
+    - name: Wait for dependencies
+      type: xlrelease.GateTask
+      team: Release mgmt.
+    - name: "Version ${package} passes automated tests"
+      type: xlrelease.GateTask
+      description: Select the proper version to test
+      team: QA
+      conditions:
+      - name: Automated regression tests are green
+        type: xlrelease.GateCondition
+      - name: Release notes available
+        type: xlrelease.GateCondition
+    - name: "Prepare ${QA environment} environment"
+      type: xlrelease.Task
+      team: Dev
+    - name: "Deploy ${package} database  to ${QA environment} environment"
+      type: xlrelease.Task
+      team: Dev
+    - name: "Deploy ${package} backend  to ${QA environment} environment"
+      type: xlrelease.Task
+      team: Dev
+    - name: "Deploy ${package} frontend  to ${QA environment} environment"
+      type: xlrelease.Task
+      team: Dev
+    - name: Testing
+      type: xlrelease.ParallelGroup
+      tasks:
+      - name: Update test scenarios
+        type: xlrelease.Task
+        team: QA
+      - name: Regression tests
+        type: xlrelease.Task
+        team: QA
+    - name: Sign off by QA
+      type: xlrelease.GateTask
+      team: QA
+      conditions:
+      - name: Notify developers
+        type: xlrelease.GateCondition
+      - name: Notify Ops
+        type: xlrelease.GateCondition
+    - name: Notify stakeholders of successful QA
+      type: xlrelease.NotificationTask
+      team: QA
+      addresses:
+      - vagrant@localhost
+      subject: "Application ${package} passed QA!"
+      body: "The application is available on the ${QA environment} environment."
+    color: "#498500"
+  - phase: UAT
+    tasks:
+    - name: Acceptance environment available
+      type: xlrelease.GateTask
+      team: Ops
+      conditions:
+      - name: Verify environment availability
+        type: xlrelease.GateCondition
+    - name: "Prepare ${ACC environment} environment"
+      type: xlrelease.Task
+      team: Ops
+    - name: "Install test data on ${ACC environment} environment"
+      type: xlrelease.Task
+      team: Ops
+    - name: "Deploy ${package} database to ${ACC environment} environment"
+      type: xlrelease.Task
+      team: Ops
+    - name: "Deploy ${package} backend to ${ACC environment} environment"
+      type: xlrelease.Task
+      team: Ops
+    - name: "Deploy ${package} frontend to ${ACC environment} environment"
+      type: xlrelease.Task
+      team: Ops
+    - name: "Notify QA of installation on ${ACC environment}"
+      type: xlrelease.NotificationTask
+      team: QA
+      addresses:
+      - vagrant@localhost
+      subject: "Application ${package} is ready for acceptance testing on ${ACC environment}"
+      body: Have at it!
+    - name: Testing
+      type: xlrelease.ParallelGroup
+      tasks:
+      - name: Execute performance test
+        type: xlrelease.Task
+        team: QA
+      - name: Execute UA test
+        type: xlrelease.Task
+        team: QA
+    - name: Approve
+      type: xlrelease.GateTask
+      team: QA
+      conditions:
+      - name: Collect all signatures
+        type: xlrelease.GateCondition
+    color: "#FF9E49"
+  - phase: Production
+    tasks:
+    - name: Go/no go meeting
+      type: xlrelease.Task
+      team: Release mgmt.
+    - name: Decide on upgrade slot
+      type: xlrelease.Task
+      description: Block all agendas
+      team: Release mgmt.
+    - name: Everybody available
+      type: xlrelease.GateTask
+      team: Release mgmt.
+      conditions:
+      - name: Invitations sent
+        type: xlrelease.GateCondition
+      - name: All participants accepted
+        type: xlrelease.GateCondition
+      - name: Set start time on Digital.ai Deploy task
+        type: xlrelease.GateCondition
+    - name: Run backups
+      type: xlrelease.Task
+      team: Ops
+    - name: "Deploy ${package} database to PROD"
+      type: xlrelease.Task
+      team: Ops
+    - name: "Deploy ${package} backend to PROD"
+      type: xlrelease.Task
+      team: Ops
+    - name: "Deploy ${package} frontend to PROD"
+      type: xlrelease.Task
+      team: Ops
+    - name: Execute smoke tests
+      type: xlrelease.Task
+      team: QA
+    - name: Notification
+      type: xlrelease.ParallelGroup
+      tasks:
+      - name: Alert marketing
+        type: xlrelease.Task
+        team: Release mgmt.
+      - name: "Application ${package} is live!"
+        type: xlrelease.NotificationTask
+        team: Release mgmt.
+        addresses:
+        - vagrant@localhost
+        subject: "Application ${package} is live!"
+    color: "#D61F21"
+  variables:
+  - type: xlrelease.StringVariable
+    key: ACC environment
+    label: Title
+    description: The title of the item.
+  - type: xlrelease.StringVariable
+    key: QA environment
+    label: Title
+    description: The title of the item.
+  - type: xlrelease.StringVariable
+    key: package
+    label: Title
+    description: The title of the item.
+  riskProfile: Default risk profile
