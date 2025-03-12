@@ -2,6 +2,7 @@
 apiVersion: xl-release/v1
 kind: Templates
 metadata:
+  path: Workflows/Confluence
   home: Digital.ai - Official/Workflows/Confluence
 spec:
 - template: Confluence create page
@@ -157,7 +158,7 @@ spec:
     label: Page IDs
     description: PageID input for tasks
   disableNotifications: true
-  author: admin
+  author: Digital.ai
   logo:
     type: xlrelease.TemplateLogo
     contentType: image/svg+xml
