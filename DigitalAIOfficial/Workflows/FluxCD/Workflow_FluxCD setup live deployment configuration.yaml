@@ -136,7 +136,6 @@ spec:
     valueProvider:
       type: xlrelease.ListOfStringValueProviderConfiguration
       values:
-        - "GitRepository"
         - "HelmRelease"
         - "Kustomization"
   - type: xlrelease.StringVariable
