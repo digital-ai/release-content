@@ -1,0 +1,319 @@
+---
+apiVersion: xl-release/v1
+kind: Templates
+metadata:
+  path: Workflows/FluxCD
+  home: Digital.ai - Official/Workflows/FluxCD
+spec:
+  - template: FluxCD setup application
+    description: "Create an application in FluxCD that can be deployed to Kubernetes\
+    \ cluster, with initial deployment"
+    scheduledStartDate: 2022-12-13T09:00:00+01:00
+    dueDate: 2022-12-13T10:00:00+01:00
+    phases:
+      - phase: Check if application exists
+        tasks:
+          - name: Application input
+            type: xlrelease.UserInputTask
+            description: Please enter the required information below.
+            variables:
+              - fluxCDApiServer
+              - appName
+              - namespace
+          - name: Check if application exists
+            type: fluxcd.CheckIfApplicationExists
+            variableMapping:
+              server: "${fluxCDApiServer}"
+              commandResponse: "${applicationExistsResponse}"
+            capabilities:
+              - remote
+            appName: "${appName}"
+            namespace: "${namespace}"
+        color: "#3d6c9e"
+      - phase: Create FluxCD source
+        tasks:
+          - name: Git source information input
+            type: xlrelease.UserInputTask
+            description: Please enter the required information below.
+            precondition: |-
+              import json
+
+              if releaseVariables["applicationExistsResponse"]["exists"] == "true":
+                raise Exception("Application app already exists!")
+
+              result = True
+            variables:
+              - gitRepository
+          - name: Source information input
+            type: xlrelease.UserInputTask
+            description: Please enter the required information below.
+            variables:
+              - sourceName
+              - sourceNamespace
+              - fluxKind
+              - sourceRepoUrl
+              - sourceRepoBranch
+              - sourceRepoTag
+              - sourceRepoCommit
+              - reconciliationInterval
+              - sourceProvider
+              - secretRef
+              - insecureSkipTLS
+              - sourceRef
+              - sourceFluxKind
+              - sourceChartName
+              - sourceChartVersion
+          - name: Create FluxCD source
+            type: fluxcd.CreateSource
+            variableMapping:
+              server: "${fluxCDApiServer}"
+              gitRepository: "${gitRepository}"
+              kind: "${fluxKind}"
+              sourceKind: "${sourceFluxKind}"
+              commandResponse: "${createFluxCdSourceResponse}"
+            sourceName: "${sourceName}"
+            namespace: "${sourceNamespace}"
+            url: "${sourceRepoUrl}"
+            branch: "${sourceRepoBranch}"
+            tag: "${sourceRepoTag}"
+            commit: "${sourceRepoCommit}"
+            interval: "${reconciliationInterval}"
+            provider: "${sourceProvider}"
+            secretRef: "${secretRef}"
+            insecureSkipTLS: "${insecureSkipTLS}"
+            sourceRef: "${sourceRef}"
+            chartName: "${sourceChartName}"
+            version: "${sourceChartVersion}"
+      - phase: Create FluxCD application
+        tasks:
+          - name: Application information input
+            type: xlrelease.UserInputTask
+            description: Please enter the required information below.
+            variables:
+              - deployKind
+              - path
+              - prune
+              - sourceRefKind
+              - chartName
+              - chartVersion
+              - valuesFiles
+              - values
+          - name: Create FluxCD application
+            type: fluxcd.CreateApplication
+            variableMapping:
+              server: "${fluxCDApiServer}"
+              gitRepository: "${gitRepository}"
+              kind: "${deployKind}"
+              sourceKind: "${sourceRefKind}"
+              valuesFiles: "${valuesFiles}"
+              values: "${values}"
+              prune: "${prune}"
+            capabilities:
+              - remote
+            applicationName: "${appName}"
+            targetNamespace: "${namespace}"
+            sourceName: "${sourceName}"
+            sourceNamespace: "${sourceNamespace}"
+            interval: "${reconciliationInterval}"
+            path: "${path}"
+            chartName: "${chartName}"
+            chartVersion: "${chartVersion}"
+        color: "#3d6c9e"
+    kind: WORKFLOW
+    categories:
+      - Application onboarding
+    variables:
+      - type: xlrelease.StringVariable
+        key: namespace
+        showOnReleaseStart: false
+        label: Namespace
+        description: Namespace to check if app exists in
+      - type: xlrelease.StringVariable
+        key: appName
+        showOnReleaseStart: false
+        label: App Name
+        description: Name of the app
+      - type: xlrelease.ReferenceVariable
+        key: fluxCDApiServer
+        showOnReleaseStart: false
+        label: FluxCD API server
+        description: FluxCD API server where application will be deployed
+        referencedType: fluxcd.APIServer
+      - type: xlrelease.ReferenceVariable
+        key: gitRepository
+        showOnReleaseStart: false
+        label: Git repository
+        description: Git repository configuration with FluxCD resource repository path reference
+        referencedType: fluxcd.GitConfig
+      - type: xlrelease.StringVariable
+        key: sourceName
+        showOnReleaseStart: false
+        label: Source Name
+        description: Name of FluxCD Source resource.
+      - type: xlrelease.StringVariable
+        key: sourceNamespace
+        showOnReleaseStart: false
+        label: Source namespace
+        description: Namespace used for FluxCD Source resource
+      - type: xlrelease.StringVariable
+        key: deployKind
+        showOnReleaseStart: false
+        label: Kind
+        description: Kind of created FluxCD Application resource
+        valueProvider:
+          type: xlrelease.ListOfStringValueProviderConfiguration
+          values:
+            - HelmRelease
+            - Kustomization
+      - type: xlrelease.StringVariable
+        key: fluxKind
+        showOnReleaseStart: false
+        label: Kind
+        description: Kind of FluxCD Source
+        valueProvider:
+          type: xlrelease.ListOfStringValueProviderConfiguration
+          values:
+            - GitRepository
+            - HelmRepository
+            - OCIRepository
+            - HelmChart
+      - type: xlrelease.StringVariable
+        key: sourceRepoUrl
+        showOnReleaseStart: false
+        label: Source url
+        description: URL of the source repository
+      - type: xlrelease.StringVariable
+        key: sourceRepoBranch
+        requiresValue: false
+        showOnReleaseStart: false
+        label: Source branch
+        description: Branch of the source repository
+      - type: xlrelease.StringVariable
+        key: sourceRepoTag
+        requiresValue: false
+        showOnReleaseStart: false
+        label: Source tag
+        description: Tag of the source repository
+      - type: xlrelease.StringVariable
+        key: sourceRepoCommit
+        requiresValue: false
+        showOnReleaseStart: false
+        label: Source commit
+        description: Commit of the source repository
+      - type: xlrelease.StringVariable
+        key: secretRef
+        requiresValue: false
+        showOnReleaseStart: false
+        label: Secret ref
+        description: Name of the Secret containing OCI repository credentials
+      - type: xlrelease.StringVariable
+        key: sourceRefKind
+        showOnReleaseStart: false
+        label: Source reference kind
+        description: Kind of FluxCD Source resource
+        valueProvider:
+          type: xlrelease.ListOfStringValueProviderConfiguration
+          values:
+            - GitRepository
+            - HelmRepository
+      - type: xlrelease.StringVariable
+        key: sourceFluxKind
+        requiresValue: false
+        showOnReleaseStart: false
+        label: Source Kind
+        description: FluxCD Source resource kind. This field is required for HelmChart kind.
+        valueProvider:
+          type: xlrelease.ListOfStringValueProviderConfiguration
+          values:
+            - GitRepository
+            - HelmRepository
+            - OCIRepository
+      - type: xlrelease.StringVariable
+        key: reconciliationInterval
+        value: "1m"
+        showOnReleaseStart: false
+        label: Reconciliation interval
+        description: "Time interval for reconciliation, specified in a duration format\
+        \ (e.g., 5m30s for 5 minutes and 30 seconds)"
+      - type: xlrelease.BooleanVariable
+        key: insecureSkipTLS
+        requiresValue: false
+        showOnReleaseStart: false
+        label: Insecure skip TLS
+        description: Skip TLS verification for OCI repository
+      - type: xlrelease.StringVariable
+        key: sourceRef
+        requiresValue: false
+        showOnReleaseStart: false
+        label: Source reference
+        description: FluxCD Source resource reference name. This field is required for HelmChart kind.
+      - type: xlrelease.StringVariable
+        key: path
+        requiresValue: false
+        showOnReleaseStart: false
+        label: Path
+        description: Path for Kustomizations within the Git repository. This field is
+          required for Kustomization kind.
+      - type: xlrelease.BooleanVariable
+        key: prune
+        requiresValue: false
+        showOnReleaseStart: false
+        label: Prune
+        description: Enable automatic pruning (garbage collection)
+      - type: xlrelease.StringVariable
+        key: sourceProvider
+        requiresValue: false
+        showOnReleaseStart: false
+        label: Source provider
+        description: Source OCI Provider type (generic, aws, azure, gcp)
+      - type: xlrelease.StringVariable
+        key: sourceChartName
+        requiresValue: false
+        showOnReleaseStart: false
+        label: Chart name
+        description: Name of the Helm chart. This field is required for HelmChart kind.
+      - type: xlrelease.StringVariable
+        key: sourceChartVersion
+        requiresValue: false
+        showOnReleaseStart: false
+        label: Chart version
+        description: Version of the Helm chart. This field is required for HelmChart kind.
+      - type: xlrelease.StringVariable
+        key: chartName
+        requiresValue: false
+        showOnReleaseStart: false
+        label: Chart name
+        description: Name of the Helm chart. This field is required for HelmRelease kind.
+      - type: xlrelease.StringVariable
+        key: chartVersion
+        requiresValue: false
+        showOnReleaseStart: false
+        label: Chart version
+        description: Version of the Helm chart. This field is required for HelmRelease kind.
+      - type: xlrelease.ListStringVariable
+        key: valuesFiles
+        requiresValue: false
+        showOnReleaseStart: false
+        label: Values Files
+        description: List of values files that should be used with Helm chart
+      - type: xlrelease.MapStringStringVariable
+        key: values
+        requiresValue: false
+        showOnReleaseStart: false
+        label: Values
+        description: Map of paths and values for overriding Helm values. Format of the
+          path must be a valid JSON Patch path. JSON Patch add operation will be applied
+          with given path. E.g. '/ingress/hosts/0/paths/0/pathType' to update pathType
+          for first path inside of first host in ingress.
+      - type: xlrelease.MapStringStringVariable
+        key: applicationExistsResponse
+        requiresValue: false
+        showOnReleaseStart: false
+        label: Command Response
+        description: Command Response
+    disableNotifications: true
+    author: Digital.ai
+    logo:
+      type: xlrelease.TemplateLogo
+      contentType: image/png
+      file: !file "template-logo/b949355de09e9b9e833c07ea8bbe02d466256a6a/fluxcd.svg"
