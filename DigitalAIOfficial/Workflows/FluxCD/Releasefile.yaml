@@ -6,3 +6,4 @@ spec:
   - Workflow_FluxCD setup deployment server.yaml
   - Workflow_FluxCD setup live deployment configuration.yaml
   - Workflow_FluxCD delete live deployment configuration.yaml
+  - Workflow_FluxCD setup application.yaml
