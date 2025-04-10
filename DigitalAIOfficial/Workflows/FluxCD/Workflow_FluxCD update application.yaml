@@ -5,7 +5,7 @@ metadata:
   path: Workflows/FluxCD
   home: Digital.ai - Official/Workflows/FluxCD
 spec:
-- template: FluxCD setup application
+- template: FluxCD update application
   scheduledStartDate: 2025-03-27T09:00:00+01:00
   dueDate: 2025-03-27T10:00:00+01:00
   phases:
@@ -63,8 +63,8 @@ spec:
       - sourceProvider
       - sourceSecretRef
       - sourceManifestName
-    - name: Create source manifest
-      type: fluxcd.CreateSource
+    - name: Update source manifest
+      type: fluxcd.UpdateSource
       variableMapping:
         gitRepository: "${gitRepository}"
         server: "${fluxcdApiServer}"
@@ -87,8 +87,8 @@ spec:
       - targetNamespace
       - deploymentKind
       - path
-    - name: Create deployment manifest
-      type: fluxcd.CreateApplication
+    - name: Update deployment manifest
+      type: fluxcd.UpdateApplication
       variableMapping:
         kind: "${deploymentKind}"
         gitRepository: "${gitRepository}"
