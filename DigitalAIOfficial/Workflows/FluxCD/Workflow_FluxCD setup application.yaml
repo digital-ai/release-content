@@ -17,6 +17,7 @@ spec:
       variables:
       - fluxcdApiServer
       - kubernetesApiServer
+      - gitRepository
       - namespace
       - applicationName
     - name: Check if application exists
@@ -75,6 +76,7 @@ spec:
       sourceNamespace: "${sourceNamespace}"
       kind: GitRepository
       url: "${sourceUrl}"
+      branch: "${sourceBranch}"
       interval: "${sourceRecInterval}"
       secretRef: "${sourceSecretRef}"
     - name: Application deployment information input
@@ -292,7 +294,6 @@ spec:
     description: Application deployment reconciliation interval
   - type: xlrelease.StringVariable
     key: deploymentNamespace
-    requiresValue: false
     showOnReleaseStart: false
     label: Deployment namespace
     description: Deployment namespace
