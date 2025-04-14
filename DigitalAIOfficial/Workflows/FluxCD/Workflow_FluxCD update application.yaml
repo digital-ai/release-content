@@ -16,7 +16,6 @@ spec:
       description: Please enter the required information below.
       variables:
       - fluxcdApiServer
-      - kubernetesApiServer
       - namespace
       - applicationName
     - name: Check if application exists
@@ -26,24 +25,6 @@ spec:
       capabilities:
       - remote
       appName: "${applicationName}"
-      namespace: "${namespace}"
-  - phase: Check if namespace exists
-    tasks:
-    - name: Check if namespace exists
-      type: kubernetes.ExistsNamespace
-      variableMapping:
-        server: "${kubernetesApiServer}"
-        namespace: "${namespace}"
-      capabilities:
-      - remote
-  - phase: Create namespace
-    tasks:
-    - name: Create namespace
-      type: kubernetes.CreateNamespace
-      variableMapping:
-        server: "${kubernetesApiServer}"
-      capabilities:
-      - remote
       namespace: "${namespace}"
     color: "#3d6c9e"
   - phase: Create FluxCD Application
@@ -179,11 +160,6 @@ spec:
     showOnReleaseStart: false
     label: FluxCD API Server
     referencedType: fluxcd.APIServer
-  - type: xlrelease.ReferenceVariable
-    key: kubernetesApiServer
-    showOnReleaseStart: false
-    label: Kubernetes API Server
-    referencedType: kubernetes.APIServer
   - type: xlrelease.StringVariable
     key: applicationName
     showOnReleaseStart: false
