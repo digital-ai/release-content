@@ -2,7 +2,6 @@
 apiVersion: xl-release/v1
 kind: Templates
 metadata:
-  path: Workflows/FluxCD
   home: Digital.ai - Official/Workflows/FluxCD
 spec:
 - template: FluxCD setup application
@@ -19,6 +18,7 @@ spec:
       - gitRepository
       - namespace
       - applicationName
+      - deploymentKind
     - name: Check if application exists
       type: fluxcd.CheckIfApplicationExists
       variableMapping:
@@ -34,17 +34,17 @@ spec:
       type: xlrelease.UserInputTask
       description: Please enter the required information below.
       variables:
+      - sourceManifestName
       - sourceName
       - sourceKind
       - sourceUrl
       - sourceBranch
       - sourceNamespace
+      - sourceRecInterval
       - sourceTag
       - sourceCommit
-      - sourceRecInterval
       - sourceProvider
       - sourceSecretRef
-      - sourceManifestName
     - name: Create source manifest
       type: fluxcd.CreateSource
       variableMapping:
@@ -55,37 +55,64 @@ spec:
       manifestFilename: "${sourceManifestName}"
       sourceName: "${sourceName}"
       sourceNamespace: "${sourceNamespace}"
-      kind: GitRepository
+      kind: HelmRepository
       url: "${sourceUrl}"
       branch: "${sourceBranch}"
       interval: "${sourceRecInterval}"
       secretRef: "${sourceSecretRef}"
-    - name: Application deployment information input
+    - name: Kustomization deployment information input
       type: xlrelease.UserInputTask
       description: Please enter the required information below.
+      precondition: |-
+        kind = "${deploymentKind}"
+
+        if (kind == "Kustomization"):
+          result = True
+        else:
+          result = False
       variables:
       - deploymentManifestName
-      - applicationRecInterval
       - deploymentNamespace
-      - targetNamespace
-      - deploymentKind
+      - applicationRecInterval
       - path
+    - name: HelmRelease deployment information input
+      type: xlrelease.UserInputTask
+      description: Please enter the required information below.
+      precondition: |-
+        kind = "${deploymentKind}"
+
+        if (kind == "HelmRelease"):
+          result = True
+        else:
+          result = False
+      variables:
+      - deploymentManifestName
+      - deploymentNamespace
+      - applicationRecInterval
+      - chartName
+      - chartVersion
+      - valuesFiles
+      - values
     - name: Create deployment manifest
       type: fluxcd.CreateApplication
       variableMapping:
         kind: "${deploymentKind}"
-        gitRepository: "${gitRepository}"
-        server: "${fluxcdApiServer}"
         sourceKind: "${sourceKind}"
+        gitRepository: "${gitRepository}"
+        values: "${values}"
+        valuesFiles: "${valuesFiles}"
+        server: "${fluxcdApiServer}"
       capabilities:
       - remote
       manifestFilename: "${deploymentManifestName}"
       interval: "${applicationRecInterval}"
       sourceName: "${sourceName}"
-      sourceNamespace: "${deploymentNamespace}"
+      sourceNamespace: "${sourceNamespace}"
       applicationName: "${applicationName}"
-      targetNamespace: "${targetNamespace}"
+      targetNamespace: "${namespace}"
       path: "${path}"
+      chartName: "${chartName}"
+      chartVersion: "${chartVersion}"
     color: "#3d6c9e"
   - phase: Configuration
     tasks:
@@ -314,6 +341,27 @@ spec:
     key: timeout
     requiresValue: false
     showOnReleaseStart: false
+  - type: xlrelease.StringVariable
+    key: chartName
+    showOnReleaseStart: false
+    label: Name of the helm chart
+  - type: xlrelease.StringVariable
+    key: chartVersion
+    showOnReleaseStart: false
+    label: Version of the helm chart
+  - type: xlrelease.SetStringVariable
+    key: valuesFiles
+    requiresValue: false
+    showOnReleaseStart: false
+    description: List of values files that should be used with Helm chart
+  - type: xlrelease.MapStringStringVariable
+    key: values
+    requiresValue: false
+    showOnReleaseStart: false
+    description: Map of paths and values for overriding Helm values. Format of the
+      path must be a valid JSON Patch path. JSON Patch add operation will be applied
+      with given path. E.g. '/ingress/hosts/0/paths/0/pathType' to update pathType
+      for first path inside of first host in ingress."
   disableNotifications: true
   author: Digital.ai
   logo:

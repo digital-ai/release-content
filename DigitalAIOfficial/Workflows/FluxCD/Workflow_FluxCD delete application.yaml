@@ -4,9 +4,10 @@ kind: Templates
 metadata:
   home: Digital.ai - Official/Workflows/FluxCD
 spec:
-- template: Workflow_FluxCD delete application
+- template: FluxCD delete application
   description: Deletes FluxCD deployment and ints manifests
   scheduledStartDate: 2025-04-10T09:00:00+02:00
+  dueDate: 2025-04-10T10:00:00+02:00
   phases:
   - phase: Workflow tasks
     tasks:
@@ -15,7 +16,7 @@ spec:
       script: |-
         from com.xebialabs.xlrelease.domain.environments import LiveDeployment
 
-        liveDeployment = deploymentServerApi.getLiveDeployment("")
+        liveDeployment = deploymentServerApi.getLiveDeployment("${liveDeploymentId}")
         applicationName = liveDeployment.getApplication().getTitle().split(":")[0]
         statusWebhookEventSource = configurationApi.getConfiguration(liveDeployment.eventSourceId)
 
@@ -26,23 +27,13 @@ spec:
       type: xlrelease.UserInputTask
       description: Please enter the required information below.
       variables:
+      - gitRepository
       - sourceName
       - sourceNamespace
       - deploymentName
       - deploymentNamespace
       - sourceManifestName
       - deploymentManifestName
-    - name: Delete source manifest
-      type: fluxcd.DeleteSource
-      variableMapping:
-        server: "${fluxCDApiServer}"
-        gitRepository: "${gitRepository}"
-      capabilities:
-      - remote
-      manifestFilename: "${sourceManifestName}"
-      resourceName: "${sourceName}"
-      namespace: "${sourceNamespace}"
-      kind: GitRepository
     - name: Delete deployment manifest
       type: fluxcd.DeleteApplication
       variableMapping:
@@ -54,6 +45,17 @@ spec:
       resourceName: "${deploymentName}"
       namespace: "${deploymentNamespace}"
       kind: Kustomization
+    - name: Delete source manifest
+      type: fluxcd.DeleteSource
+      variableMapping:
+        server: "${fluxCDApiServer}"
+        gitRepository: "${gitRepository}"
+      capabilities:
+      - remote
+      manifestFilename: "${sourceManifestName}"
+      resourceName: "${sourceName}"
+      namespace: "${sourceNamespace}"
+      kind: GitRepository
     - name: Delete configuration
       type: xlrelease.ScriptTask
       script: |-
@@ -79,26 +81,37 @@ spec:
   - delete
   - internal
   variables:
+  - type: xlrelease.ReferenceVariable
+    key: gitRepository
+    showOnReleaseStart: false
+    referencedType: fluxcd.GitConfig
+    label: FluxCD resource repository
+    description: Git repository where manifests are stored
   - type: xlrelease.StringVariable
     key: sourceName
     showOnReleaseStart: false
+    label: Name of the soruce to be deleted
+    description: Name of the soruce to be deleted
   - type: xlrelease.StringVariable
     key: deploymentName
     showOnReleaseStart: false
+    description: Name of the deployment to be deleted
   - type: xlrelease.StringVariable
     key: sourceNamespace
     showOnReleaseStart: false
+    description: Namespace where the source is located
   - type: xlrelease.StringVariable
     key: deploymentNamespace
     showOnReleaseStart: false
+    description: Namespace where the deployment is located
   - type: xlrelease.StringVariable
     key: sourceManifestName
-    requiresValue: false
     showOnReleaseStart: false
+    description: Name of the source manifest
   - type: xlrelease.StringVariable
     key: deploymentManifestName
-    requiresValue: false
     showOnReleaseStart: false
+    description: Name of the deployment manifest
   - type: xlrelease.StringVariable
     key: statusWebhookEventSourceId
     requiresValue: false
@@ -112,15 +125,11 @@ spec:
     requiresValue: false
     showOnReleaseStart: false
     referencedType: fluxcd.APIServer
-  - type: xlrelease.ReferenceVariable
-    key: gitRepository
-    requiresValue: false
-    showOnReleaseStart: false
-    referencedType: fluxcd.GitConfig
   - type: xlrelease.StringVariable
     key: sourceKind
     requiresValue: false
     showOnReleaseStart: false
+    description: Kind of the source
     valueProvider:
       type: xlrelease.ListOfStringValueProviderConfiguration
       values:
@@ -132,6 +141,7 @@ spec:
     key: deploymentKind
     requiresValue: false
     showOnReleaseStart: false
+    description: Kind of the deployment
     valueProvider:
       type: xlrelease.ListOfStringValueProviderConfiguration
       values:
