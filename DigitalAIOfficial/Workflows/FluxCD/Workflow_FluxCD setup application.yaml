@@ -2,6 +2,7 @@
 apiVersion: xl-release/v1
 kind: Templates
 metadata:
+  path: Workflows/FluxCD
   home: Digital.ai - Official/Workflows/FluxCD
 spec:
 - template: FluxCD setup application
@@ -300,12 +301,6 @@ spec:
     showOnReleaseStart: false
     label: Deployment namespace
     description: Deployment namespace
-  - type: xlrelease.StringVariable
-    key: targetNamespace
-    requiresValue: false
-    showOnReleaseStart: false
-    label: Target namespace
-    description: Target namespace
   - type: xlrelease.StringVariable
     key: deploymentKind
     showOnReleaseStart: false
