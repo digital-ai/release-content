@@ -23,6 +23,7 @@ spec:
       type: fluxcd.CheckIfApplicationExists
       variableMapping:
         server: "${fluxcdApiServer}"
+        commandResponse: "${commandResponse}"
       capabilities:
       - remote
       appName: "${applicationName}"
@@ -32,6 +33,14 @@ spec:
     tasks:
     - name: Get application information
       type: fluxcd.GetApplicationDetails
+      precondition: |-
+        import json
+        
+        response = json.loads(releaseVariables["commandResponse"])
+        if response["exists"] == "false":
+          raise Exception("Application does not exists!")
+  
+        result = True
       variableMapping:
         server: "${fluxcdApiServer}"
         commandResponse: "${commandResponse}"
@@ -234,11 +243,6 @@ spec:
         ${autoconfigDetails}
     color: "#3d6c9e"
   kind: WORKFLOW
-  tags:
-  - Remote FluxCD
-  - application
-  - update
-  - internal
   variables:
   - type: xlrelease.ReferenceVariable
     key: fluxcdApiServer
