@@ -51,12 +51,12 @@ spec:
       variableMapping:
         gitRepository: "${gitRepository}"
         server: "${fluxcdApiServer}"
+        kind: "${sourceKind}"
       capabilities:
       - remote
       manifestFilename: "${sourceManifestName}"
       sourceName: "${sourceName}"
       sourceNamespace: "${sourceNamespace}"
-      kind: HelmRepository
       url: "${sourceUrl}"
       branch: "${sourceBranch}"
       interval: "${sourceRecInterval}"
@@ -94,6 +94,19 @@ spec:
       - chartVersion
       - valuesFiles
       - values
+    - name: Adjust required fields
+      type: xlrelease.ScriptTask
+      precondition: |-
+        kind = "${deploymentKind}"
+
+        if (kind == "Kustomization"):
+          result = True
+        else:
+          result = False
+      script: |-
+        # fake fill values to avoid error in the next task as these values are required only for HelmRelease type
+        releaseVariables['chartName'] = "noChartName"
+        releaseVariables['chartVersion'] = "noChartVersion"
     - name: Create deployment manifest
       type: fluxcd.CreateApplication
       variableMapping:
