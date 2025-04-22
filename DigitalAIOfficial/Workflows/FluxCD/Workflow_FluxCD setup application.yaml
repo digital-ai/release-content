@@ -24,6 +24,7 @@ spec:
       type: fluxcd.CheckIfApplicationExists
       variableMapping:
         server: "${fluxcdApiServer}"
+        commandResponse: "${commandResponse}"
       capabilities:
       - remote
       appName: "${applicationName}"
@@ -38,7 +39,7 @@ spec:
         
         response = json.loads(releaseVariables["commandResponse"])
         if response["exists"] == "true":
-          raise Exception("Application app already exists!")
+          raise Exception("Application already exists!")
         
         result = True
       description: Please enter the required information below.
@@ -69,6 +70,14 @@ spec:
       branch: "${sourceBranch}"
       interval: "${sourceRecInterval}"
       secretRef: "${sourceSecretRef}"
+    - name: Create namespace manifest
+      type: fluxcd.CreateNamespaceFile
+      variableMapping:
+        gitRepository: "${gitRepository}"
+        server: "${fluxcdApiServer}"
+      capabilities:
+        - remote
+      namespace: "${namespace}"
     - name: Kustomization deployment information input
       type: xlrelease.UserInputTask
       description: Please enter the required information below.

@@ -62,33 +62,47 @@ spec:
         releaseVariables['sourceName'] = sourceManifest['name']
         releaseVariables['sourceKind'] = sourceManifest['kind']
         releaseVariables['sourceUrl'] = sourceManifest['spec']['url']
-        releaseVariables['sourceBranch'] = sourceManifest['spec']['ref']['branch'] if 'branch' in sourceManifest['spec']['ref'] else ''
+        
+        if 'ref' in sourceManifest['spec']:
+          ref = sourceManifest['spec']['ref']
+          releaseVariables['sourceBranch'] = ref['branch'] if 'branch' in ref else ''
+          releaseVariables['sourceTag'] = ref['tag'] if 'tag' in ref else ''
+          releaseVariables['sourceCommit'] = ref['commit'] if 'commit' in ref else ''
         releaseVariables['sourceNamespace'] = sourceManifest['namespace']
         releaseVariables['sourceRecInterval'] = sourceManifest['spec']['interval']
-        releaseVariables['sourceTag'] = sourceManifest['spec']['ref']['tag'] if 'tag' in sourceManifest['spec']['ref'] else ''
-        releaseVariables['sourceCommit'] = sourceManifest['spec']['ref']['commit'] if 'commit' in sourceManifest['spec']['ref'] else ''
         releaseVariables['sourceProvider'] = sourceManifest['spec']['provider'] if 'provider' in sourceManifest['spec'] else ''
         releaseVariables['sourceSecretRef'] = sourceManifest['spec']['secretRef'] if 'secretRef' in sourceManifest['spec'] else ''
         
         deployManifest = appInfo['deployManifest']
         releaseVariables['deploymentManifestName'] = deployManifest['sourceFile']
-        releaseVariables['deploymentNamespace'] = deployManifest['spec']['sourceRef']['namespace'] if 'namespace' in deployManifest['spec']['sourceRef'] else ''
         releaseVariables['applicationRecInterval'] = deployManifest['spec']['interval']
         releaseVariables['deploymentKind'] = deployManifest['kind']
         
-        # Kustomize specific
-        releaseVariables['path'] = deployManifest['spec']['path']
-        
-        # HelmRelease specific
-        # TODO: probably nests too deep and will error
-        releaseVariables['chartName'] = deployManifest['spec']['chart']['spec']['chart'] if 'chart' in deployManifest['spec']['chart']['spec'] else ''
-        releaseVariables['chartVersion'] = deployManifest['spec']['chart']['spec']['version'] if 'version' in deployManifest['spec']['chart']['spec'] else ''
-        releaseVariables['valuesFiles'] = deployManifest['spec']['chart']['spec']['valuesFiles'] if 'valuesFiles' in deployManifest['spec']['chart']['spec'] else ''
-        releaseVariables['values'] = deployManifest['spec']['chart']['spec']['values'] if 'values' in deployManifest['spec']['chart']['spec'] else ''
-        
-        # TODO: double check
-        # releaseVariables['targetNamespace'] = deployManifest['spec']['targetNamespace']
-  - phase: Create FluxCD Application
+        kind = deployManifest['kind']
+
+        if kind == 'Kustomization':
+          releaseVariables['deploymentNamespace'] = deployManifest['spec']['sourceRef']['namespace'] if 'namespace' in deployManifest['spec']['sourceRef'] else ''
+          
+          # Kustomization specific fields
+          releaseVariables['path'] = deployManifest['spec']['path']
+
+          # fake fill values to avoid error in the next task as these values are required only for HelmRelease type
+          releaseVariables['chartName'] = "noChartName"
+          releaseVariables['chartVersion'] = "noChartVersion"
+
+        if kind == 'HelmRelease':
+          if 'chart' in deployManifest['spec'] and 'spec' in deployManifest['spec']['chart']:
+            spec = deployManifest['spec']['chart']['spec']
+            releaseVariables['deploymentNamespace'] = spec['sourceRef']['namespace'] if 'namespace' in spec['sourceRef'] else ''
+            
+            # HelmRelease specific fields
+            releaseVariables['chartName'] = spec['chart'] if 'chart' in spec else ''
+            releaseVariables['chartVersion'] = spec['version'] if 'version' in spec else ''
+            if 'valuesFiles' in deployManifest['spec']:
+              releaseVariables['valuesFiles'] = deployManifest['spec']['valuesFiles']
+            if 'values' in deployManifest['spec']:
+              releaseVariables['values'] = deployManifest['spec']['values']
+  - phase: Update FluxCD Application
     tasks:
     - name: Application source information input
       type: xlrelease.UserInputTask
@@ -360,12 +374,6 @@ spec:
     showOnReleaseStart: false
     label: Deployment namespace
     description: Deployment namespace
-  - type: xlrelease.StringVariable
-    key: targetNamespace
-    requiresValue: false
-    showOnReleaseStart: false
-    label: Target namespace
-    description: Target namespace
   - type: xlrelease.StringVariable
     key: deploymentKind
     showOnReleaseStart: false
