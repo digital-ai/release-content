@@ -8,3 +8,5 @@ spec:
   - Workflow_FluxCD delete live deployment configuration.yaml
   - Workflow_FluxCD setup application.yaml
   - Workflow_FluxCD setup git repository.yaml
+  - Workflow_FluxCD delete application.yaml
+  - Workflow_FluxCD update application.yaml
