@@ -80,6 +80,8 @@ spec:
   - application
   - delete
   - internal
+  categories:
+    - Application onboarding
   variables:
   - type: xlrelease.ReferenceVariable
     key: gitRepository
@@ -90,8 +92,8 @@ spec:
   - type: xlrelease.StringVariable
     key: sourceName
     showOnReleaseStart: false
-    label: Name of the soruce to be deleted
-    description: Name of the soruce to be deleted
+    label: Name of the source to be deleted
+    description: Name of the source to be deleted
   - type: xlrelease.StringVariable
     key: deploymentName
     showOnReleaseStart: false

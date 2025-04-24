@@ -189,6 +189,13 @@ spec:
         ${autoconfigDetails}
     color: "#3d6c9e"
   kind: WORKFLOW
+  tags:
+    - Remote FluxCD
+    - application
+    - update
+    - internal
+  categories:
+    - Application onboarding
   variables:
   - type: xlrelease.ReferenceVariable
     key: fluxcdApiServer

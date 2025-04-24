@@ -189,6 +189,8 @@ spec:
         ${autoconfigDetails}
     color: "#3d6c9e"
   kind: WORKFLOW
+  categories:
+    - Application onboarding
   variables:
   - type: xlrelease.ReferenceVariable
     key: fluxcdApiServer

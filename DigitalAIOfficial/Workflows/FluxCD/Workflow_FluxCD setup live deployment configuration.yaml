@@ -138,6 +138,7 @@ spec:
       values:
         - "HelmRelease"
         - "Kustomization"
+        - "All Kinds"
   - type: xlrelease.StringVariable
     key: liveDeploymentConfigurationApplication
     showOnReleaseStart: false
