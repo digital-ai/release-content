@@ -30,8 +30,10 @@ spec:
       - gitRepository
       - sourceName
       - sourceNamespace
+      - sourceKind
       - deploymentName
       - deploymentNamespace
+      - deploymentKind
       - sourceManifestName
       - deploymentManifestName
     - name: Delete deployment manifest
@@ -39,23 +41,23 @@ spec:
       variableMapping:
         server: "${fluxCDApiServer}"
         gitRepository: "${gitRepository}"
+        kind: "${deploymentKind}"
       capabilities:
       - remote
       manifestFilename: "${deploymentManifestName}"
       resourceName: "${deploymentName}"
       namespace: "${deploymentNamespace}"
-      kind: Kustomization
     - name: Delete source manifest
       type: fluxcd.DeleteSource
       variableMapping:
         server: "${fluxCDApiServer}"
         gitRepository: "${gitRepository}"
+        kind: "${sourceKind}"
       capabilities:
       - remote
       manifestFilename: "${sourceManifestName}"
       resourceName: "${sourceName}"
       namespace: "${sourceNamespace}"
-      kind: GitRepository
     - name: Delete configuration
       type: xlrelease.ScriptTask
       script: |-
