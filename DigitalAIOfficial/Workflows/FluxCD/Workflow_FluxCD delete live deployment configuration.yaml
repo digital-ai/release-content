@@ -1,0 +1,69 @@
+---
+apiVersion: xl-release/v1
+kind: Templates
+metadata:
+  path: Workflows/FluxCD
+  home: Digital.ai - Official/Workflows/FluxCD
+spec:
+  - template: FluxCD delete live deployment configuration
+    description: Delete FluxCD live deployment configuration
+    scheduledStartDate: 2024-09-10T12:33:53.874+02:00
+    dueDate: 2024-09-10T13:33:53.874+02:00
+    phases:
+      - phase: Delete live deployment config
+        tasks:
+          - name: Configure Digital.ai Release
+            type: xlrelease.ScriptTask
+            description: Deleting Live Deployment configuration
+            script: |-
+              from com.xebialabs.xlrelease.domain import Configuration
+              from com.xebialabs.deployit.plugin.api.reflect import Type
+              
+              statusWebhookEventSource = configurationApi.getConfiguration("${statusWebhookEventSourceId}")
+              liveDeploymentConfigs = statusWebhookEventSource.getProperty("liveDeploymentConfigs")
+              
+              configToDelete = None
+              for config in statusWebhookEventSource.getProperty("liveDeploymentConfigs"):
+                if config.id == "${liveDeploymentConfigurationId}":
+                  configToDelete = config
+                  break
+              
+              if configToDelete:
+                liveDeploymentConfigs.remove(configToDelete)
+                statusWebhookEventSource.setProperty("liveDeploymentConfigs", liveDeploymentConfigs)
+                configurationApi.updateConfiguration("${statusWebhookEventSourceId}", statusWebhookEventSource)
+                configurationApi.deleteConfiguration(configToDelete.id)
+          - name: Patch FluxCD applications
+            type: xlrelease.ScriptTask
+            description: |-
+              Patches FluxCD resources by running a container script, adding the necessary annotation to enable live event notifications.
+            script: |-
+              from java.lang import Throwable
+
+              try:
+                deploymentServerApi.patchDeploymentServer("${statusWebhookEventSourceId}")
+              except Throwable as e:
+                if "Cannot find active remote runner" in str(e):
+                  raise Exception("Failed to find active remote runner for executing container script.")
+                raise
+        color: "#3d6c9e"
+    kind: WORKFLOW
+    tags:
+      - Remote FluxCD
+      - deployment server
+      - delete
+      - internal
+    categories:
+      - Application onboarding
+    variables:
+      - type: xlrelease.StringVariable
+        key: statusWebhookEventSourceId
+      - type: xlrelease.StringVariable
+        key: liveDeploymentConfigurationId
+        requiresValue: false
+    disableNotifications: true
+    author: Digital.ai
+    logo:
+      type: xlrelease.TemplateLogo
+      contentType: image/png
+      file: !file "template-logo/b949355de09e9b9e833c07ea8bbe02d466256a6a/fluxcd.svg"
