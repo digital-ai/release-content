@@ -90,7 +90,6 @@ spec:
           result = False
       variables:
       - deploymentManifestName
-      - deploymentNamespace
       - applicationRecInterval
       - path
     - name: HelmRelease deployment information input
@@ -105,7 +104,6 @@ spec:
           result = False
       variables:
       - deploymentManifestName
-      - deploymentNamespace
       - applicationRecInterval
       - chartName
       - chartVersion
@@ -164,7 +162,7 @@ spec:
         liveDeploymentConfiguration.folderId = getCurrentFolder().getId()
         liveDeploymentConfiguration.setProperty("kind", "${deploymentKind}")
         liveDeploymentConfiguration.setProperty("application", "${applicationName}")
-        liveDeploymentConfiguration.setProperty("namespace", "${deploymentNamespace}")
+        liveDeploymentConfiguration.setProperty("namespace", "${namespace}")
 
         liveDeploymentConfiguration = configurationApi.addConfiguration(liveDeploymentConfiguration)
 
@@ -328,11 +326,6 @@ spec:
     showOnReleaseStart: false
     label: Application deployment reconciliation interval
     description: Application deployment reconciliation interval
-  - type: xlrelease.StringVariable
-    key: deploymentNamespace
-    showOnReleaseStart: false
-    label: Deployment namespace
-    description: Deployment namespace
   - type: xlrelease.StringVariable
     key: deploymentKind
     showOnReleaseStart: false

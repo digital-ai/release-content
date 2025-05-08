@@ -17,29 +17,53 @@ spec:
         from com.xebialabs.xlrelease.domain.environments import LiveDeployment
 
         liveDeployment = deploymentServerApi.getLiveDeployment("${liveDeploymentId}")
-        applicationName = liveDeployment.getApplication().getTitle().split(":")[0]
+        nameAndNamespace = liveDeployment.getApplication().getTitle().split(":")
+        applicationName = nameAndNamespace[1]
+        namespace = nameAndNamespace[0]
         statusWebhookEventSource = configurationApi.getConfiguration(liveDeployment.eventSourceId)
 
         releaseVariables['statusWebhookEventSourceId'] = statusWebhookEventSource.id
         releaseVariables['applicationName'] = applicationName
-        releaseVariables['fluxCDApiServer'] = statusWebhookEventSource["sourceServer"].id
+        releaseVariables['namespace'] = namespace
+        releaseVariables['fluxcdApiServer'] = statusWebhookEventSource["sourceServer"].id
     - name: Application details
       type: xlrelease.UserInputTask
       description: Please enter the required information below.
       variables:
-      - gitRepository
-      - sourceName
-      - sourceNamespace
-      - sourceKind
-      - deploymentName
-      - deploymentNamespace
-      - deploymentKind
-      - sourceManifestName
-      - deploymentManifestName
+        - gitRepository
+    - name: Get application information
+      type: fluxcd.GetApplicationDetails
+      variableMapping:
+        server: "${fluxcdApiServer}"
+        commandResponse: "${commandResponse}"
+      capabilities:
+        - remote
+      applicationName: "${applicationName}"
+      namespace: "${namespace}"
+    - name: Fill application information
+      type: xlrelease.ScriptTask
+      script: |-
+        import json
+
+        appInfo = json.loads(releaseVariables['commandResponse'])
+        appInfo['sourceManifest'] = json.loads(appInfo['sourceManifest'])
+        appInfo['deployManifest'] = json.loads(appInfo['deployManifest'])
+
+        sourceManifest = appInfo['sourceManifest']
+        releaseVariables['sourceManifestName'] = sourceManifest['sourceFile']
+        releaseVariables['sourceName'] = sourceManifest['name']
+        releaseVariables['sourceNamespace'] = sourceManifest['namespace']
+        releaseVariables['sourceKind'] = sourceManifest['kind']
+        
+        deployManifest = appInfo['deployManifest']
+        releaseVariables['deploymentManifestName'] = deployManifest['sourceFile']
+        releaseVariables['deploymentName'] = deployManifest['name']
+        releaseVariables['deploymentNamespace'] = deployManifest['namespace']
+        releaseVariables['deploymentKind'] = deployManifest['kind']
     - name: Delete deployment manifest
       type: fluxcd.DeleteApplication
       variableMapping:
-        server: "${fluxCDApiServer}"
+        server: "${fluxcdApiServer}"
         gitRepository: "${gitRepository}"
         kind: "${deploymentKind}"
       capabilities:
@@ -50,7 +74,7 @@ spec:
     - name: Delete source manifest
       type: fluxcd.DeleteSource
       variableMapping:
-        server: "${fluxCDApiServer}"
+        server: "${fluxcdApiServer}"
         gitRepository: "${gitRepository}"
         kind: "${sourceKind}"
       capabilities:
@@ -58,12 +82,20 @@ spec:
       manifestFilename: "${sourceManifestName}"
       resourceName: "${sourceName}"
       namespace: "${sourceNamespace}"
+    - name: Delete namespace manifest
+      type: fluxcd.DeleteNamespaceFile
+      variableMapping:
+        server: "${fluxcdApiServer}"
+        gitRepository: "${gitRepository}"
+      capabilities:
+        - remote
+      namespace: "${namespace}"
     - name: Delete configuration
       type: xlrelease.ScriptTask
       script: |-
         statusWebhookEventSource = configurationApi.getConfiguration("${statusWebhookEventSourceId}")
         liveDeploymentConfigs = statusWebhookEventSource.getProperty("liveDeploymentConfigs")
-        applicationToDelete = ""
+        applicationToDelete = "${applicationName}"
 
         configToDelete = None
         for config in liveDeploymentConfigs:
@@ -125,10 +157,20 @@ spec:
     requiresValue: false
     showOnReleaseStart: false
   - type: xlrelease.ReferenceVariable
-    key: fluxCDApiServer
+    key: fluxcdApiServer
     requiresValue: false
     showOnReleaseStart: false
     referencedType: fluxcd.APIServer
+  - type: xlrelease.StringVariable
+    key: applicationName
+    showOnReleaseStart: false
+    label: Application name
+    description: Name of the FluxCD application to be created
+  - type: xlrelease.StringVariable
+    key: namespace
+    showOnReleaseStart: false
+    label: Namespace
+    description: Namespace to create the FluxCD application in
   - type: xlrelease.StringVariable
     key: sourceKind
     requiresValue: false
