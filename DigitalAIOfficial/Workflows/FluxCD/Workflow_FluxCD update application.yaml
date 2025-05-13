@@ -265,7 +265,6 @@ spec:
     - Remote FluxCD
     - application
     - update
-    - internal
   categories:
     - Application onboarding
   variables:
