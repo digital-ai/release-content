@@ -144,10 +144,12 @@ spec:
     key: sourceManifestName
     showOnReleaseStart: false
     description: Name of the source manifest
+    requiresValue: false
   - type: xlrelease.StringVariable
     key: deploymentManifestName
     showOnReleaseStart: false
     description: Name of the deployment manifest
+    requiresValue: false
   - type: xlrelease.StringVariable
     key: statusWebhookEventSourceId
     requiresValue: false
@@ -193,10 +195,6 @@ spec:
       values:
       - Kustomization
       - HelmRelease
-  - type: xlrelease.StringVariable
-    key: applicationName
-    requiresValue: false
-    showOnReleaseStart: false
   disableNotifications: true
   author: Digital.ai
   logo:
