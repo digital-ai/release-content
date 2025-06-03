@@ -26,9 +26,26 @@ spec:
         releaseVariables['applicationName'] = applicationName
         releaseVariables['namespace'] = namespace
         releaseVariables['fluxcdApiServer'] = statusWebhookEventSource["sourceServer"].id
+    - name: Check if application exists
+      type: fluxcd.CheckIfApplicationExists
+      variableMapping:
+        server: "${fluxcdApiServer}"
+        commandResponse: "${commandResponse}"
+      capabilities:
+        - remote
+      appName: "${applicationName}"
+      namespace: "${namespace}"
     - name: Application details
       type: xlrelease.UserInputTask
       description: Please enter the required information below.
+      precondition: |-
+        import json
+
+        response = json.loads(releaseVariables["commandResponse"])
+        if response["exists"] == "false":
+          raise Exception("Application does not exists!")
+
+        result = True
       variables:
         - gitRepository
     - name: Get application information
