@@ -20,11 +20,28 @@ spec:
       - namespace
       - applicationName
       - deploymentKind
+    - name: Check if application exists
+      type: fluxcd.CheckIfApplicationExists
+      variableMapping:
+        server: "${fluxcdApiServer}"
+        commandResponse: "${commandResponse}"
+      capabilities:
+        - remote
+      appName: "${applicationName}"
+      namespace: "${namespace}"
     color: "#3d6c9e"
   - phase: Create FluxCD Application
     tasks:
     - name: Application source information input
       type: xlrelease.UserInputTask
+      precondition: |-
+        import json
+
+        response = json.loads(releaseVariables["commandResponse"])
+        if response["exists"] == "true":
+          raise Exception("Application already exists!")
+
+        result = True
       description: Please enter the required information below.
       variables:
       - sourceManifestName
@@ -53,6 +70,14 @@ spec:
       branch: "${sourceBranch}"
       interval: "${sourceRecInterval}"
       secretRef: "${sourceSecretRef}"
+    - name: Create namespace manifest
+      type: fluxcd.CreateNamespaceFile
+      variableMapping:
+        gitRepository: "${gitRepository}"
+        server: "${fluxcdApiServer}"
+      capabilities:
+        - remote
+      namespace: "${namespace}"
     - name: Kustomization deployment information input
       type: xlrelease.UserInputTask
       description: Please enter the required information below.

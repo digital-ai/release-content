@@ -19,8 +19,91 @@ spec:
       - gitRepository
       - namespace
       - applicationName
-      - deploymentKind
+    - name: Check if application exists
+      type: fluxcd.CheckIfApplicationExists
+      variableMapping:
+        server: "${fluxcdApiServer}"
+        commandResponse: "${commandResponse}"
+      capabilities:
+        - remote
+      appName: "${applicationName}"
+      namespace: "${namespace}"
     color: "#3d6c9e"
+  - phase: Retrieve application information
+    tasks:
+    - name: Get application information
+      type: fluxcd.GetApplicationDetails
+      precondition: |-
+        import json
+
+        response = json.loads(releaseVariables["commandResponse"])
+        if response["exists"] == "false":
+          raise Exception("Application does not exists!")
+
+        result = True
+      variableMapping:
+        server: "${fluxcdApiServer}"
+        commandResponse: "${commandResponse}"
+      capabilities:
+        - remote
+      applicationName: "${applicationName}"
+      namespace: "${namespace}"
+    - name: Fill application information
+      type: xlrelease.ScriptTask
+      script: |-
+        import json
+        
+        appInfo = json.loads(releaseVariables['commandResponse'])
+        appInfo['sourceManifest'] = json.loads(appInfo['sourceManifest'])
+        appInfo['deployManifest'] = json.loads(appInfo['deployManifest'])
+        
+        sourceManifest = appInfo['sourceManifest']
+        releaseVariables['sourceManifestName'] = sourceManifest['sourceFile']
+        releaseVariables['oldSourceManifestName'] = sourceManifest['sourceFile']
+        releaseVariables['sourceName'] = sourceManifest['name']
+        releaseVariables['sourceKind'] = sourceManifest['kind']
+        releaseVariables['sourceUrl'] = sourceManifest['spec']['url']
+        
+        if 'ref' in sourceManifest['spec']:
+          ref = sourceManifest['spec']['ref']
+          releaseVariables['sourceBranch'] = ref['branch'] if 'branch' in ref else ''
+          releaseVariables['sourceTag'] = ref['tag'] if 'tag' in ref else ''
+          releaseVariables['sourceCommit'] = ref['commit'] if 'commit' in ref else ''
+        releaseVariables['sourceNamespace'] = sourceManifest['namespace']
+        releaseVariables['sourceRecInterval'] = sourceManifest['spec']['interval']
+        releaseVariables['sourceProvider'] = sourceManifest['spec']['provider'] if 'provider' in sourceManifest['spec'] else ''
+        releaseVariables['sourceSecretRef'] = sourceManifest['spec']['secretRef'] if 'secretRef' in sourceManifest['spec'] else ''
+        
+        deployManifest = appInfo['deployManifest']
+        releaseVariables['deploymentManifestName'] = deployManifest['sourceFile']
+        releaseVariables['oldDeploymentManifestName'] = deployManifest['sourceFile']
+        releaseVariables['applicationRecInterval'] = deployManifest['spec']['interval']
+        releaseVariables['deploymentKind'] = deployManifest['kind']
+        
+        kind = deployManifest['kind']
+        
+        if kind == 'Kustomization':
+          releaseVariables['deploymentNamespace'] = deployManifest['spec']['sourceRef']['namespace'] if 'namespace' in deployManifest['spec']['sourceRef'] else ''
+        
+          # Kustomization specific fields
+          releaseVariables['path'] = deployManifest['spec']['path']
+        
+          # fake fill values to avoid error in the next task as these values are required only for HelmRelease type
+          releaseVariables['chartName'] = "noChartName"
+          releaseVariables['chartVersion'] = "noChartVersion"
+        
+        if kind == 'HelmRelease':
+          if 'chart' in deployManifest['spec'] and 'spec' in deployManifest['spec']['chart']:
+            spec = deployManifest['spec']['chart']['spec']
+            releaseVariables['deploymentNamespace'] = spec['sourceRef']['namespace'] if 'namespace' in spec['sourceRef'] else ''
+        
+            # HelmRelease specific fields
+            releaseVariables['chartName'] = spec['chart'] if 'chart' in spec else ''
+            releaseVariables['chartVersion'] = spec['version'] if 'version' in spec else ''
+            if 'valuesFiles' in deployManifest['spec']:
+              releaseVariables['valuesFiles'] = deployManifest['spec']['valuesFiles']
+            if 'values' in deployManifest['spec']:
+              releaseVariables['values'] = deployManifest['spec']['values']
   - phase: Update FluxCD Application
     tasks:
     - name: Application source information input
@@ -47,6 +130,7 @@ spec:
       capabilities:
       - remote
       manifestFilename: "${sourceManifestName}"
+      oldManifestFilename: "${oldSourceManifestName}"
       sourceName: "${sourceName}"
       sourceNamespace: "${sourceNamespace}"
       url: "${sourceUrl}"
@@ -86,19 +170,6 @@ spec:
       - chartVersion
       - valuesFiles
       - values
-    - name: Adjust required fields
-      type: xlrelease.ScriptTask
-      precondition: |-
-        kind = "${deploymentKind}"
-
-        if (kind == "Kustomization"):
-          result = True
-        else:
-          result = False
-      script: |-
-        # fake fill values to avoid error in the next task as these values are required only for HelmRelease type
-        releaseVariables['chartName'] = "noChartName"
-        releaseVariables['chartVersion'] = "noChartVersion"
     - name: Create deployment manifest
       type: fluxcd.UpdateApplication
       variableMapping:
@@ -111,6 +182,7 @@ spec:
       capabilities:
       - remote
       manifestFilename: "${deploymentManifestName}"
+      oldManifestFilename: "${oldDeploymentManifestName}"
       interval: "${applicationRecInterval}"
       sourceName: "${sourceName}"
       sourceNamespace: "${sourceNamespace}"
@@ -193,7 +265,6 @@ spec:
     - Remote FluxCD
     - application
     - update
-    - internal
   categories:
     - Application onboarding
   variables:
