@@ -3,7 +3,7 @@
 name: Verify Digital.ai Official workflow and templates
 on:
   pull_request:
-    types: [opened, synchronize, reopened]
+    types: [ opened, synchronize, reopened ]
 
 jobs:
   run_xl_apply:
@@ -25,8 +25,8 @@ jobs:
           if [ -f "$VAR_FILE" ]; then
               echo "json file is $VAR_FILE"
               echo "target branch is $TARGET_BRANCH"
-              xlr_docker_version=$(jq -r --arg branch "$TARGET_BRANCH" '.[$branch][0]' "$VAR_FILE")
-              xlcli_version=$(jq -r --arg branch "$TARGET_BRANCH" '.[$branch][1]' "$VAR_FILE")
+              xlr_docker_version=$(jq -r --arg branch "$TARGET_BRANCH" '.[$branch]["releaseVersion"]' "$VAR_FILE")
+              xlcli_version=$(jq -r --arg branch "$TARGET_BRANCH" '.[$branch]["xlCliVersion"]' "$VAR_FILE")
               echo "XLR docker version to be used is : $xlr_docker_version"
               echo "xl-cli version to be used is :  $xlcli_version"
               echo "xlr_docker_version=$xlr_docker_version" >> $GITHUB_ENV
@@ -44,7 +44,7 @@ jobs:
         run: docker pull xebialabsunsupported/xl-release:$xlr_docker_version
 
       - name: Run Docker container
-        run:  |
+        run: |
           docker run -p 5516:5516 -d --name xlr$xlr_docker_version -e "ACCEPT_EULA=Y" -e "ADMIN_PASSWORD=admin" xebialabsunsupported/xl-release:$xlr_docker_version
           sleep 100
 
