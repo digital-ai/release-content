@@ -81,5 +81,5 @@ jobs:
           for file in $(echo -e "$ALL_CHANGED_FILES"); do
             file=$(echo "$file" | sed 's/^"//;s/"$//')
             echo "$file was changed"
-            docker run ./xl1 apply -f "$file"
+            ./xl1 apply -f "$file"
           done

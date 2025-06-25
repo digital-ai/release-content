@@ -10,7 +10,7 @@ spec:
   scheduledStartDate: 2022-12-07T13:30:00+05:30
   dueDate: 2022-12-07T14:30:00+05:30
   phases:
-  - phase: Check if Argo Rollouts is already installed
+  - phase: Check if Argo Rollouts is already installed test new format123
     tasks:
     - name: Input for Argo Rollouts installation
       type: xlrelease.UserInputTask
