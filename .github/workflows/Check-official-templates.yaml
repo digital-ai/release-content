@@ -44,12 +44,6 @@ jobs:
           docker run -p 5516:5516 -d --name xlr$product_version -e "ACCEPT_EULA=Y" -e "ADMIN_PASSWORD=admin" xebialabsunsupported/xl-release:$product_version
           sleep 100
 
-      - name: Download and Install xl-cli
-        run: |
-          wget https://dist.xebialabs.com/public/xl-cli/$product_version/linux-amd64//xl -O xl1
-          chmod 755 xl1
-          ./xl1 version
-
       - name: Get changed YAML files
         id: changed-files
         uses: actions/github-script@v6
@@ -77,5 +71,5 @@ jobs:
           for file in $(echo -e "$ALL_CHANGED_FILES"); do
             file=$(echo "$file" | sed 's/^"//;s/"$//')
             echo "$file was changed"
-            ./xl1 apply -f "$file"
+            docker run  xebialabsunsupported/xl-client:$product_version apply -f "$file"
           done
