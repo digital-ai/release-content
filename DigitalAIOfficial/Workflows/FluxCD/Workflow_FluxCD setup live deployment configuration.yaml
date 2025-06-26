@@ -1,0 +1,170 @@
+---
+apiVersion: xl-release/v1
+kind: Templates
+metadata:
+  path: Workflows/FluxCD
+  home: Digital.ai - Official/Workflows/FluxCD
+spec:
+- template: FluxCD setup live deployment configuration
+  description: "Create or update FluxCD live deployment configuration"
+  phases:
+  - phase: Input
+    tasks:
+    - name: Get configuration details
+      type: xlrelease.ScriptTask
+      description: Fetches details about target server.
+      script: |-
+        statusWebhookEventSource = configurationApi.getConfiguration("${statusWebhookEventSourceId}")
+        sourceServer = statusWebhookEventSource["sourceServer"]
+
+        releaseVariables['targetServerTitle'] = sourceServer.title
+        releaseVariables['targetServerUrl'] = sourceServer.url
+        releaseVariables['statusWebhookEventSourceFolderId'] = statusWebhookEventSource.folderId
+        releaseVariables['liveDeploymentConfigurationName'] = sourceServer.title + " deployments"
+
+        if "${liveDeploymentConfigurationId}":
+          liveDeploymentConfiguration = configurationApi.getConfiguration("${liveDeploymentConfigurationId}")
+          releaseVariables['liveDeploymentConfigurationName'] = liveDeploymentConfiguration.title
+          releaseVariables['liveDeploymentConfigurationKind'] = liveDeploymentConfiguration.kind
+          releaseVariables['liveDeploymentConfigurationApplication'] = liveDeploymentConfiguration.application
+          releaseVariables['liveDeploymentConfigurationNamespace'] = list(liveDeploymentConfiguration.namespace)
+    - name: Live deployment configuration parameters
+      type: xlrelease.UserInputTask
+      description: |-
+        Enter a name for the configuration.
+        
+        Choose which application to listen. Fill in the kind, application name and namespace.
+
+        You can pick one of the kinds of resource to which you listen to.
+
+        Please give the full name of the application on the FluxCD server you want to listen to.
+        For example:
+        > **Application**
+        > `My app` --  only listen to application **My app**
+        >
+        You can also listen to all applications by using `*` wildcard.
+
+        You can use multiple namespaces, if you use wild card for application name, it will listen to all the applications in the specified namespaces.
+        
+        **Deployment server:** [${targetServerTitle}](${targetServerUrl})
+      variables:
+      - liveDeploymentConfigurationName
+      - liveDeploymentConfigurationKind
+      - liveDeploymentConfigurationApplication
+      - liveDeploymentConfigurationNamespace
+    color: '#3d6c9e'
+  - phase: Configuration
+    tasks:
+    - name: Configure Digital.ai Release
+      type: xlrelease.ScriptTask
+      description: "Configuring **${liveDeploymentConfigurationName}**"
+      script: |-
+        from com.xebialabs.xlrelease.domain import Configuration
+        from com.xebialabs.deployit.plugin.api.reflect import Type
+        from java.util import Set
+        
+        namespaces = Set.of(*[namespace for namespace in ${liveDeploymentConfigurationNamespace}])
+        
+        if "${liveDeploymentConfigurationId}":
+          liveDeploymentConfiguration = configurationApi.getConfiguration("${liveDeploymentConfigurationId}")
+          liveDeploymentConfiguration.title = "${liveDeploymentConfigurationName}"
+          liveDeploymentConfiguration.kind = "${liveDeploymentConfigurationKind}"
+          liveDeploymentConfiguration.application = "${liveDeploymentConfigurationApplication}"   
+          liveDeploymentConfiguration.namespace = namespaces
+        
+          configurationApi.updateConfiguration("${liveDeploymentConfigurationId}", liveDeploymentConfiguration)
+        else:
+          statusWebhookEventSource = configurationApi.getConfiguration("${statusWebhookEventSourceId}")
+
+          liveDeploymentConfiguration = Configuration()
+          liveDeploymentConfiguration.type = Type.valueOf("fluxcd.DeploymentConfig")
+          liveDeploymentConfiguration.title = "${liveDeploymentConfigurationName}"
+          liveDeploymentConfiguration.folderId = "${statusWebhookEventSourceFolderId}"
+          liveDeploymentConfiguration.setProperty("kind", "${liveDeploymentConfigurationKind}")
+          liveDeploymentConfiguration.setProperty("application", "${liveDeploymentConfigurationApplication}")
+          liveDeploymentConfiguration.setProperty("namespace", namespaces)
+
+          liveDeploymentConfiguration = configurationApi.addConfiguration(liveDeploymentConfiguration)
+
+          liveDeploymentConfigs = statusWebhookEventSource.getProperty("liveDeploymentConfigs")
+          liveDeploymentConfigs.add(liveDeploymentConfiguration)
+
+          statusWebhookEventSource.setProperty("liveDeploymentConfigs", liveDeploymentConfigs)
+
+          configurationApi.updateConfiguration("${statusWebhookEventSourceId}", statusWebhookEventSource)
+    - name: Patch FluxCD applications
+      type: xlrelease.ScriptTask
+      description: |-
+        Patches FluxCD applications by running a container script, adding the necessary annotation to enable live event notifications.
+
+        The following annotation is applied to all apps matching the specified filter:
+        `notifications.argoproj.io/subscribe.on-app-status-changed.release-webhook`
+      script: |-
+        from java.lang import Throwable
+
+        try:
+          deploymentServerApi.patchDeploymentServer("${statusWebhookEventSourceId}")
+        except Throwable as e:
+          if "Cannot find active remote runner" in str(e):
+            raise Exception("Failed to find active remote runner for executing container script.")
+          raise
+    color: '#3d6c9e'
+  kind: WORKFLOW
+  tags:
+    - Remote FluxCD
+    - deployment server
+    - config
+    - internal
+  categories:
+    - Application onboarding
+  variables:
+  - type: xlrelease.StringVariable
+    key: statusWebhookEventSourceId
+  - type: xlrelease.StringVariable
+    key: liveDeploymentConfigurationId
+    requiresValue: false
+  - type: xlrelease.StringVariable
+    key: liveDeploymentConfigurationName
+    showOnReleaseStart: false
+    label: Configuration name
+    description: The name of live deployment configuration
+  - type: xlrelease.StringVariable
+    key: liveDeploymentConfigurationKind
+    showOnReleaseStart: false
+    label: Kind
+    description: Kind for the application in FluxCD.
+    valueProvider:
+      type: xlrelease.ListOfStringValueProviderConfiguration
+      values:
+        - "HelmRelease"
+        - "Kustomization"
+        - "All Kinds"
+  - type: xlrelease.StringVariable
+    key: liveDeploymentConfigurationApplication
+    showOnReleaseStart: false
+    label: Application
+    description: Application name in FluxCD. You may enter a wildcard here to take all the applications.
+    value: "*"
+  - type: xlrelease.ListStringVariable
+    key: liveDeploymentConfigurationNamespace
+    showOnReleaseStart: false
+    label: Namespace
+    description: Namespace for the application in FluxCD. You may enter multiple namespaces here.
+  - type: xlrelease.StringVariable
+    key: targetServerTitle
+    requiresValue: false
+    showOnReleaseStart: false
+  - type: xlrelease.StringVariable
+    key: targetServerUrl
+    requiresValue: false
+    showOnReleaseStart: false
+  - type: xlrelease.StringVariable
+    key: statusWebhookEventSourceFolderId
+    requiresValue: false
+    showOnReleaseStart: false
+  disableNotifications: true
+  author: Digital.ai
+  logo:
+    type: xlrelease.TemplateLogo
+    contentType: image/png
+    file: !file "template-logo/b949355de09e9b9e833c07ea8bbe02d466256a6a/fluxcd.svg"

@@ -1,0 +1,118 @@
+---
+apiVersion: xl-release/v1
+kind: Templates
+metadata:
+  path: Workflows/FluxCD
+  home: Digital.ai - Official/Workflows/FluxCD
+spec:
+  - template: FluxCD setup deployment server
+    description: Create required connections for FluxCD deployment server
+    scheduledStartDate: 2024-08-28T09:00:00+02:00
+    dueDate: 2024-08-28T10:00:00+02:00
+    phases:
+      - phase: User input
+        tasks:
+          - name: Choose connection
+            type: xlrelease.UserInputTask
+            description: Choose FluxCD server which you want to be configured.
+            variables:
+              - server
+          - name: Test connection
+            type: xlrelease.ScriptTask
+            description: Test connection to deployment server.
+            script: |-
+              from java.lang import Throwable
+              
+              serverId = releaseVariables['server']
+              
+              statusResponse = configurationApi.checkStatus(serverId)
+              
+              if not statusResponse.success:
+                if "Cannot find active remote runner" in statusResponse.errorText:
+                  raise Exception("Failed to find active remote runner for executing container script.")
+                raise Exception(statusResponse.errorText)
+        color: "#3d6c9e"
+      - phase: Configure connection
+        tasks:
+          - name: Setup deployment server
+            type: xlrelease.ScriptTask
+            description: Creates required configuration items in Release for connection
+              to deployment server.
+            script: |-
+              from com.xebialabs.xlrelease.api.v1.forms import DeploymentServerSetup
+              from java.lang import Throwable
+              
+              folderId = getCurrentFolder().getId()
+              serverId = releaseVariables['server']
+              
+              deploymentServerSetup = DeploymentServerSetup(folderId, serverId)
+              
+              try:
+                statusWebhookEventSourceId = deploymentServerApi.setupDeploymentServer(deploymentServerSetup)
+                releaseVariables['statusWebhookEventSourceId'] = statusWebhookEventSourceId
+              except Throwable as e:
+                if "Cannot find active remote runner" in str(e):
+                  raise Exception("Failed to find active remote runner for executing container script.")
+                raise
+          - name: Autoconfigure deployment server
+            type: xlrelease.ScriptTask
+            description: Generates FluxCD config map required to enable live event notifications.
+            script: |-
+              from java.lang import Throwable
+              
+              try:
+                autoConfigResponse = deploymentServerApi.autoconfigureDeploymentServer("${statusWebhookEventSourceId}")
+                releaseVariables['autoconfigMessage'] = autoConfigResponse.message
+                releaseVariables['autoconfigUrl'] = autoConfigResponse.url
+                releaseVariables['autoconfigDetails'] = autoConfigResponse.details
+              except Throwable as e:
+                if "Cannot find active remote runner" in str(e):
+                  raise Exception("Failed to find active remote runner for executing container script.")
+                raise
+        color: "#3d6c9e"
+      - phase: Final
+        tasks:
+          - name: Autoconfig response
+            type: xlrelease.Task
+            description: |-
+              ${autoconfigMessage}
+        color: "#3d6c9e"
+    kind: WORKFLOW
+    categories:
+      - Create Deployment Server
+    tags:
+      - Remote FluxCD
+      - deployment server
+      - new
+    variables:
+      - type: xlrelease.StringVariable
+        key: statusWebhookEventSourceId
+        requiresValue: false
+        showOnReleaseStart: false
+      - type: xlrelease.ReferenceVariable
+        key: server
+        requiresValue: false
+        showOnReleaseStart: false
+        label: FluxCD server
+        referencedType: fluxcd.APIServer
+      - type: xlrelease.StringVariable
+        key: autoconfigMessage
+        requiresValue: false
+        showOnReleaseStart: false
+        label: Response message
+      - type: xlrelease.StringVariable
+        key: autoconfigUrl
+        requiresValue: false
+        showOnReleaseStart: false
+        label: Response URL
+      - type: xlrelease.StringVariable
+        key: autoconfigDetails
+        requiresValue: false
+        showOnReleaseStart: false
+        label: Response details
+    disableNotifications: true
+    author: Digital.ai
+    logo:
+      type: xlrelease.TemplateLogo
+      contentType: image/png
+      file: !file "template-logo/b949355de09e9b9e833c07ea8bbe02d466256a6a/fluxcd.svg"
