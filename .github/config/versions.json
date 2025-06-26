@@ -1,6 +1,22 @@
 {
-  "release/23.3.x": "23.3.9",
-  "release/24.1.x": "24.1.4",
-  "release/24.3.x": "24.1.4",
-  "release/25.1.x": "24.1.10"
+  "release/23.3.x": {
+    "releaseVersion": "23.3.9",
+    "xlCliVersion": "23.3.9"
+  },
+  "release/24.1.x": {
+    "releaseVersion": "24.1.19",
+    "xlCliVersion": "24.1.19"
+  },
+  "release/24.3.x": {
+    "releaseVersion": "24.3.8",
+    "xlCliVersion": "24.3.8"
+  },
+  "release/25.1.x": {
+    "releaseVersion": "25.1.2",
+    "xlCliVersion": "25.1.2"
+  },
+  "release/25.3.x": {
+    "releaseVersion": "25.3.0",
+    "xlCliVersion": "25.3.0-beta.657"
+  }
 }
