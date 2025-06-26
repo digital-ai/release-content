@@ -4,15 +4,15 @@
     "xlCliVersion": "23.3.9"
   },
   "release/24.1.x": {
-    "releaseVersion": "24.1.19",
+    "releaseVersion": "24.1.19-608.113",
     "xlCliVersion": "24.1.19"
   },
   "release/24.3.x": {
-    "releaseVersion": "24.3.8",
+    "releaseVersion": "24.3.8-608.913",
     "xlCliVersion": "24.3.8"
   },
   "release/25.1.x": {
-    "releaseVersion": "25.1.2",
+    "releaseVersion": "25.1.2-610.908",
     "xlCliVersion": "25.1.2"
   },
   "release/25.3.x": {
