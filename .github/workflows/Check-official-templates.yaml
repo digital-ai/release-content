@@ -3,7 +3,7 @@
 name: Verify Digital.ai Official workflow and templates
 on:
   pull_request:
-    types: [opened, synchronize, reopened]
+    types: [ opened, synchronize, reopened ]
 
 jobs:
   run_xl_apply:
@@ -19,34 +19,38 @@ jobs:
       - name: Print Target Branch Name
         run: echo "Target branch is $TARGET_BRANCH"
 
-      - name: Get version name from version.json
+      - name: Get docker and xl-cli version name from version.json
         run: |
           VAR_FILE=".github/config/versions.json"
           if [ -f "$VAR_FILE" ]; then
               echo "json file is $VAR_FILE"
               echo "target branch is $TARGET_BRANCH"
-              product_version=$(jq -r --arg branch "$TARGET_BRANCH" '.[$branch]' "$VAR_FILE")
-              echo "Product version: $product_version"
-              echo "product_version=$product_version" >> $GITHUB_ENV
+              xlr_docker_version=$(jq -r --arg branch "$TARGET_BRANCH" '.[$branch]["releaseVersion"]' "$VAR_FILE")
+              xlcli_version=$(jq -r --arg branch "$TARGET_BRANCH" '.[$branch]["xlCliVersion"]' "$VAR_FILE")
+              echo "XLR docker version to be used is : $xlr_docker_version"
+              echo "xl-cli version to be used is :  $xlcli_version"
+              echo "xlr_docker_version=$xlr_docker_version" >> $GITHUB_ENV
+              echo "xlcli_version=$xlcli_version" >> $GITHUB_ENV
           else
             echo "File $VAR_FILE does not exist"
           fi
-          echo "Debug: product_version=$product_version"
+          echo "Debug: xlr_docker_version=$xlr_docker_version"
+          echo "Debug: xlcli_version=$xlcli_version"
 
       - name: Print version got from json
-        run: echo "xl-cli and docker version from versions.json file is $product_version"
+        run: echo "XLR docker version is $xlr_docker_version and xl-cli version is $xlcli_version from versions.json"
 
       - name: Pull Release Docker image
-        run: docker pull xebialabsunsupported/xl-release:$product_version
+        run: docker pull xebialabsunsupported/xl-release:$xlr_docker_version
 
       - name: Run Docker container
-        run:  |
-          docker run -p 5516:5516 -d --name xlr$product_version -e "ACCEPT_EULA=Y" -e "ADMIN_PASSWORD=admin" xebialabsunsupported/xl-release:$product_version
+        run: |
+          docker run -p 5516:5516 -d --name xlr$xlr_docker_version -e "ACCEPT_EULA=Y" -e "ADMIN_PASSWORD=admin" xebialabsunsupported/xl-release:$xlr_docker_version
           sleep 100
 
       - name: Download and Install xl-cli
         run: |
-          wget https://dist.xebialabs.com/public/xl-cli/$product_version/linux-amd64//xl -O xl1
+          wget https://dist.xebialabs.com/public/xl-cli/$xlcli_version/linux-amd64/xl -O xl1
           chmod 755 xl1
           ./xl1 version
 
