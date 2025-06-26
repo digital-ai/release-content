@@ -1,0 +1,448 @@
+---
+apiVersion: xl-release/v1
+kind: Templates
+metadata:
+  path: Workflows/FluxCD
+  home: Digital.ai - Official/Workflows/FluxCD
+spec:
+- template: FluxCD update application
+  scheduledStartDate: 2025-03-27T09:00:00+01:00
+  dueDate: 2025-03-27T10:00:00+01:00
+  phases:
+  - phase: Check if application exists
+    tasks:
+    - name: Application input
+      type: xlrelease.UserInputTask
+      description: Please enter the required information below.
+      variables:
+      - fluxcdApiServer
+      - gitRepository
+      - namespace
+      - applicationName
+    - name: Check if application exists
+      type: fluxcd.CheckIfApplicationExists
+      variableMapping:
+        server: "${fluxcdApiServer}"
+        commandResponse: "${commandResponse}"
+      capabilities:
+        - remote
+      appName: "${applicationName}"
+      namespace: "${namespace}"
+    color: "#3d6c9e"
+  - phase: Retrieve application information
+    tasks:
+    - name: Get application information
+      type: fluxcd.GetApplicationDetails
+      precondition: |-
+        import json
+
+        response = json.loads(releaseVariables["commandResponse"])
+        if response["exists"] == "false":
+          raise Exception("Application does not exists!")
+
+        result = True
+      variableMapping:
+        server: "${fluxcdApiServer}"
+        commandResponse: "${commandResponse}"
+      capabilities:
+        - remote
+      applicationName: "${applicationName}"
+      namespace: "${namespace}"
+    - name: Fill application information
+      type: xlrelease.ScriptTask
+      script: |-
+        import json
+        
+        appInfo = json.loads(releaseVariables['commandResponse'])
+        appInfo['sourceManifest'] = json.loads(appInfo['sourceManifest'])
+        appInfo['deployManifest'] = json.loads(appInfo['deployManifest'])
+        
+        sourceManifest = appInfo['sourceManifest']
+        releaseVariables['sourceManifestName'] = sourceManifest['sourceFile']
+        releaseVariables['oldSourceManifestName'] = sourceManifest['sourceFile']
+        releaseVariables['sourceName'] = sourceManifest['name']
+        releaseVariables['sourceKind'] = sourceManifest['kind']
+        releaseVariables['sourceUrl'] = sourceManifest['spec']['url']
+        
+        if 'ref' in sourceManifest['spec']:
+          ref = sourceManifest['spec']['ref']
+          releaseVariables['sourceBranch'] = ref['branch'] if 'branch' in ref else ''
+          releaseVariables['sourceTag'] = ref['tag'] if 'tag' in ref else ''
+          releaseVariables['sourceCommit'] = ref['commit'] if 'commit' in ref else ''
+        releaseVariables['sourceNamespace'] = sourceManifest['namespace']
+        releaseVariables['sourceRecInterval'] = sourceManifest['spec']['interval']
+        releaseVariables['sourceProvider'] = sourceManifest['spec']['provider'] if 'provider' in sourceManifest['spec'] else ''
+        releaseVariables['sourceSecretRef'] = sourceManifest['spec']['secretRef'] if 'secretRef' in sourceManifest['spec'] else ''
+        
+        deployManifest = appInfo['deployManifest']
+        releaseVariables['deploymentManifestName'] = deployManifest['sourceFile']
+        releaseVariables['oldDeploymentManifestName'] = deployManifest['sourceFile']
+        releaseVariables['applicationRecInterval'] = deployManifest['spec']['interval']
+        releaseVariables['deploymentKind'] = deployManifest['kind']
+        
+        kind = deployManifest['kind']
+        
+        if kind == 'Kustomization':
+          releaseVariables['deploymentNamespace'] = deployManifest['spec']['sourceRef']['namespace'] if 'namespace' in deployManifest['spec']['sourceRef'] else ''
+        
+          # Kustomization specific fields
+          releaseVariables['path'] = deployManifest['spec']['path']
+        
+          # fake fill values to avoid error in the next task as these values are required only for HelmRelease type
+          releaseVariables['chartName'] = "noChartName"
+          releaseVariables['chartVersion'] = "noChartVersion"
+        
+        if kind == 'HelmRelease':
+          if 'chart' in deployManifest['spec'] and 'spec' in deployManifest['spec']['chart']:
+            spec = deployManifest['spec']['chart']['spec']
+            releaseVariables['deploymentNamespace'] = spec['sourceRef']['namespace'] if 'namespace' in spec['sourceRef'] else ''
+        
+            # HelmRelease specific fields
+            releaseVariables['chartName'] = spec['chart'] if 'chart' in spec else ''
+            releaseVariables['chartVersion'] = spec['version'] if 'version' in spec else ''
+            if 'valuesFiles' in deployManifest['spec']:
+              releaseVariables['valuesFiles'] = deployManifest['spec']['valuesFiles']
+            if 'values' in deployManifest['spec']:
+              releaseVariables['values'] = deployManifest['spec']['values']
+  - phase: Update FluxCD Application
+    tasks:
+    - name: Application source information input
+      type: xlrelease.UserInputTask
+      description: Please enter the required information below.
+      variables:
+      - sourceManifestName
+      - sourceName
+      - sourceKind
+      - sourceUrl
+      - sourceBranch
+      - sourceNamespace
+      - sourceRecInterval
+      - sourceTag
+      - sourceCommit
+      - sourceProvider
+      - sourceSecretRef
+    - name: Update source manifest
+      type: fluxcd.UpdateSource
+      variableMapping:
+        gitRepository: "${gitRepository}"
+        server: "${fluxcdApiServer}"
+        kind: "${sourceKind}"
+      capabilities:
+      - remote
+      manifestFilename: "${sourceManifestName}"
+      oldManifestFilename: "${oldSourceManifestName}"
+      sourceName: "${sourceName}"
+      sourceNamespace: "${sourceNamespace}"
+      url: "${sourceUrl}"
+      branch: "${sourceBranch}"
+      interval: "${sourceRecInterval}"
+      secretRef: "${sourceSecretRef}"
+    - name: Kustomization deployment information input
+      type: xlrelease.UserInputTask
+      description: Please enter the required information below.
+      precondition: |-
+        kind = "${deploymentKind}"
+
+        if (kind == "Kustomization"):
+          result = True
+        else:
+          result = False
+      variables:
+      - deploymentManifestName
+      - deploymentNamespace
+      - applicationRecInterval
+      - path
+    - name: HelmRelease deployment information input
+      type: xlrelease.UserInputTask
+      description: Please enter the required information below.
+      precondition: |-
+        kind = "${deploymentKind}"
+
+        if (kind == "HelmRelease"):
+          result = True
+        else:
+          result = False
+      variables:
+      - deploymentManifestName
+      - deploymentNamespace
+      - applicationRecInterval
+      - chartName
+      - chartVersion
+      - valuesFiles
+      - values
+    - name: Create deployment manifest
+      type: fluxcd.UpdateApplication
+      variableMapping:
+        kind: "${deploymentKind}"
+        sourceKind: "${sourceKind}"
+        gitRepository: "${gitRepository}"
+        values: "${values}"
+        valuesFiles: "${valuesFiles}"
+        server: "${fluxcdApiServer}"
+      capabilities:
+      - remote
+      manifestFilename: "${deploymentManifestName}"
+      oldManifestFilename: "${oldDeploymentManifestName}"
+      interval: "${applicationRecInterval}"
+      sourceName: "${sourceName}"
+      sourceNamespace: "${sourceNamespace}"
+      applicationName: "${applicationName}"
+      targetNamespace: "${namespace}"
+      path: "${path}"
+      chartName: "${chartName}"
+      chartVersion: "${chartVersion}"
+    color: "#3d6c9e"
+  - phase: Configuration
+    tasks:
+    - name: Live deployment configuration input
+      type: xlrelease.UserInputTask
+      description: Please enter the required information below.
+      variables:
+      - liveDeploymentConfigurationName
+    - name: Create live deployment configuration
+      type: xlrelease.ScriptTask
+      script: |-
+        from com.xebialabs.xlrelease.domain import Configuration
+        from com.xebialabs.deployit.plugin.api.reflect import Type
+
+        liveDeploymentConfiguration = Configuration()
+        liveDeploymentConfiguration.type = Type.valueOf("fluxcd.DeploymentConfig")
+        liveDeploymentConfiguration.title = "${liveDeploymentConfigurationName}"
+        liveDeploymentConfiguration.folderId = getCurrentFolder().getId()
+        liveDeploymentConfiguration.setProperty("kind", "${deploymentKind}")
+        liveDeploymentConfiguration.setProperty("application", "${applicationName}")
+        liveDeploymentConfiguration.setProperty("namespace", "${deploymentNamespace}")
+
+        liveDeploymentConfiguration = configurationApi.addConfiguration(liveDeploymentConfiguration)
+
+        releaseVariables['liveDeploymentConfigurationId'] = liveDeploymentConfiguration.getId()
+    - name: Setup FluxCD
+      type: xlrelease.ScriptTask
+      script: |-
+        from com.xebialabs.xlrelease.api.v1.forms import DeploymentServerSetup
+        from java.lang import Throwable
+
+        folderId = getCurrentFolder().getId()
+        configId = releaseVariables['liveDeploymentConfigurationId']
+        serverId = releaseVariables['fluxcdApiServer']
+
+        deploymentServerSetup = DeploymentServerSetup(folderId, serverId, configId)
+
+        try:
+          statusWebhookEventSourceId = deploymentServerApi.setupDeploymentServer(deploymentServerSetup)
+          releaseVariables['statusWebhookEventSourceId'] = statusWebhookEventSourceId
+        except Throwable as e:
+          if "Cannot find active remote runner" in str(e):
+            raise Exception("Failed to find active remote runner for executing container script.")
+          raise
+    - name: Configure FluxCD
+      type: xlrelease.ScriptTask
+      script: |-
+        from java.lang import Throwable
+
+        try:
+          autoConfigResponse = deploymentServerApi.autoconfigureDeploymentServer("${statusWebhookEventSourceId}")
+
+          releaseVariables['autoconfigMessage'] = autoConfigResponse.message
+          releaseVariables['autoconfigUrl'] = autoConfigResponse.url
+          releaseVariables['autoconfigDetails'] = autoConfigResponse.details
+        except Throwable as e:
+          if "Cannot find active remote runner" in str(e):
+            raise Exception("Failed to find active remote runner for executing container script.")
+          raise
+    color: "#3d6c9e"
+  - phase: Confirmation
+    tasks:
+    - name: Configuration successful
+      type: xlrelease.Task
+      description: |-
+        ${autoconfigUrl}
+        ${autoconfigMessage}
+        ${autoconfigDetails}
+    color: "#3d6c9e"
+  kind: WORKFLOW
+  tags:
+    - Remote FluxCD
+    - application
+    - update
+  categories:
+    - Application onboarding
+  variables:
+  - type: xlrelease.ReferenceVariable
+    key: fluxcdApiServer
+    showOnReleaseStart: false
+    label: FluxCD API Server
+    referencedType: fluxcd.APIServer
+  - type: xlrelease.StringVariable
+    key: applicationName
+    showOnReleaseStart: false
+    label: Application name
+    description: Name of the FluxCD application to be created
+  - type: xlrelease.StringVariable
+    key: namespace
+    showOnReleaseStart: false
+    label: Namespace
+    description: Namespace to create the FluxCD application in
+  - type: xlrelease.StringVariable
+    key: branch
+    showOnReleaseStart: false
+    label: Branch in your FluxCD source repository
+    description: Branch in your FluxCD source repository
+  - type: xlrelease.StringVariable
+    key: path
+    requiresValue: false
+    showOnReleaseStart: false
+    label: Path to include
+    description: Path to include
+  - type: xlrelease.StringVariable
+    key: sourceName
+    showOnReleaseStart: false
+    label: Name of the application source
+    description: Name of the application source
+  - type: xlrelease.StringVariable
+    key: sourceKind
+    showOnReleaseStart: false
+    label: Kind of the application source
+    description: Kind of the application source
+    valueProvider:
+      type: xlrelease.ListOfStringValueProviderConfiguration
+      values:
+      - GitRepository
+      - HelmRepository
+      - OCIRepository
+      - HelmChart
+  - type: xlrelease.StringVariable
+    key: sourceUrl
+    showOnReleaseStart: false
+    label: Application source URL
+    description: Application source URL
+  - type: xlrelease.StringVariable
+    key: sourceBranch
+    showOnReleaseStart: false
+    label: Application source branch
+    description: Application source branch
+  - type: xlrelease.StringVariable
+    key: sourceNamespace
+    showOnReleaseStart: false
+    label: Application source namespace
+    description: Application source namespace
+  - type: xlrelease.StringVariable
+    key: sourceTag
+    requiresValue: false
+    showOnReleaseStart: false
+    label: Application source tag
+    description: Application source tag
+  - type: xlrelease.StringVariable
+    key: sourceCommit
+    requiresValue: false
+    showOnReleaseStart: false
+    label: Application source commit
+    description: Application source commit
+  - type: xlrelease.StringVariable
+    key: sourceRecInterval
+    showOnReleaseStart: false
+    label: Application source reconciliation interval
+    description: Application source reconciliation interval
+  - type: xlrelease.StringVariable
+    key: sourceProvider
+    requiresValue: false
+    showOnReleaseStart: false
+    label: Application source provider
+    description: Application source provider
+  - type: xlrelease.StringVariable
+    key: sourceSecretRef
+    requiresValue: false
+    showOnReleaseStart: false
+    label: Application source secret ref
+    description: Application source secret ref
+  - type: xlrelease.ReferenceVariable
+    key: gitRepository
+    showOnReleaseStart: false
+    label: FluxCD Git Resource Repository
+    description: FluxCD Git Resource Repository
+    referencedType: fluxcd.GitConfig
+  - type: xlrelease.StringVariable
+    key: sourceManifestName
+    requiresValue: false
+    showOnReleaseStart: false
+    label: Manifest filename for application source
+    description: Manifest filename for application source
+  - type: xlrelease.StringVariable
+    key: deploymentManifestName
+    requiresValue: false
+    showOnReleaseStart: false
+    label: Manifest filename for application deployment
+    description: Manifest filename for application deployment
+  - type: xlrelease.StringVariable
+    key: applicationRecInterval
+    requiresValue: false
+    showOnReleaseStart: false
+    label: Application deployment reconciliation interval
+    description: Application deployment reconciliation interval
+  - type: xlrelease.StringVariable
+    key: deploymentNamespace
+    showOnReleaseStart: false
+    label: Deployment namespace
+    description: Deployment namespace
+  - type: xlrelease.StringVariable
+    key: deploymentKind
+    showOnReleaseStart: false
+    label: Kind of FluxCD deplyoment Kustomization/HelmRelease
+    valueProvider:
+      type: xlrelease.ListOfStringValueProviderConfiguration
+      values:
+      - Kustomization
+      - HelmRelease
+  - type: xlrelease.StringVariable
+    key: liveDeploymentConfigurationName
+    showOnReleaseStart: false
+    label: Live deployment configuration name
+  - type: xlrelease.StringVariable
+    key: statusWebhookEventSourceId
+    requiresValue: false
+    showOnReleaseStart: false
+    label: Script
+    description: Script
+  - type: xlrelease.StringVariable
+    key: autoconfigMessage
+    requiresValue: false
+    showOnReleaseStart: false
+  - type: xlrelease.StringVariable
+    key: autoconfigUrl
+    requiresValue: false
+    showOnReleaseStart: false
+  - type: xlrelease.StringVariable
+    key: autoconfigDetails
+    requiresValue: false
+    showOnReleaseStart: false
+  - type: xlrelease.StringVariable
+    key: timeout
+    requiresValue: false
+    showOnReleaseStart: false
+  - type: xlrelease.StringVariable
+    key: chartName
+    showOnReleaseStart: false
+    label: Name of the helm chart
+  - type: xlrelease.StringVariable
+    key: chartVersion
+    showOnReleaseStart: false
+    label: Version of the helm chart
+  - type: xlrelease.SetStringVariable
+    key: valuesFiles
+    requiresValue: false
+    showOnReleaseStart: false
+    description: List of values files that should be used with Helm chart
+  - type: xlrelease.MapStringStringVariable
+    key: values
+    requiresValue: false
+    showOnReleaseStart: false
+    description: Map of paths and values for overriding Helm values. Format of the
+      path must be a valid JSON Patch path. JSON Patch add operation will be applied
+      with given path. E.g. '/ingress/hosts/0/paths/0/pathType' to update pathType
+      for first path inside of first host in ingress."
+  disableNotifications: true
+  author: Digital.ai
+  logo:
+    type: xlrelease.TemplateLogo
+    contentType: image/png
+    file: !file "template-logo/b949355de09e9b9e833c07ea8bbe02d466256a6a/fluxcd.svg"

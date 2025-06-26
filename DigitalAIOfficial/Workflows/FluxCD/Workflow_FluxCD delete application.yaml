@@ -1,0 +1,220 @@
+---
+apiVersion: xl-release/v1
+kind: Templates
+metadata:
+  home: Digital.ai - Official/Workflows/FluxCD
+spec:
+- template: FluxCD delete application
+  description: Deletes FluxCD deployment and ints manifests
+  scheduledStartDate: 2025-04-10T09:00:00+02:00
+  dueDate: 2025-04-10T10:00:00+02:00
+  phases:
+  - phase: Workflow tasks
+    tasks:
+    - name: Get configuration details
+      type: xlrelease.ScriptTask
+      script: |-
+        from com.xebialabs.xlrelease.domain.environments import LiveDeployment
+
+        liveDeployment = deploymentServerApi.getLiveDeployment("${liveDeploymentId}")
+        nameAndNamespace = liveDeployment.getApplication().getTitle().split(":")
+        applicationName = nameAndNamespace[1]
+        namespace = nameAndNamespace[0]
+        statusWebhookEventSource = configurationApi.getConfiguration(liveDeployment.eventSourceId)
+
+        releaseVariables['statusWebhookEventSourceId'] = statusWebhookEventSource.id
+        releaseVariables['applicationName'] = applicationName
+        releaseVariables['namespace'] = namespace
+        releaseVariables['fluxcdApiServer'] = statusWebhookEventSource["sourceServer"].id
+    - name: Check if application exists
+      type: fluxcd.CheckIfApplicationExists
+      variableMapping:
+        server: "${fluxcdApiServer}"
+        commandResponse: "${commandResponse}"
+      capabilities:
+        - remote
+      appName: "${applicationName}"
+      namespace: "${namespace}"
+    - name: Application details
+      type: xlrelease.UserInputTask
+      description: Please enter the required information below.
+      precondition: |-
+        import json
+
+        response = json.loads(releaseVariables["commandResponse"])
+        if response["exists"] == "false":
+          raise Exception("Application does not exists!")
+
+        result = True
+      variables:
+        - gitRepository
+    - name: Get application information
+      type: fluxcd.GetApplicationDetails
+      variableMapping:
+        server: "${fluxcdApiServer}"
+        commandResponse: "${commandResponse}"
+      capabilities:
+        - remote
+      applicationName: "${applicationName}"
+      namespace: "${namespace}"
+    - name: Fill application information
+      type: xlrelease.ScriptTask
+      script: |-
+        import json
+
+        appInfo = json.loads(releaseVariables['commandResponse'])
+        appInfo['sourceManifest'] = json.loads(appInfo['sourceManifest'])
+        appInfo['deployManifest'] = json.loads(appInfo['deployManifest'])
+
+        sourceManifest = appInfo['sourceManifest']
+        releaseVariables['sourceManifestName'] = sourceManifest['sourceFile']
+        releaseVariables['sourceName'] = sourceManifest['name']
+        releaseVariables['sourceNamespace'] = sourceManifest['namespace']
+        releaseVariables['sourceKind'] = sourceManifest['kind']
+        
+        deployManifest = appInfo['deployManifest']
+        releaseVariables['deploymentManifestName'] = deployManifest['sourceFile']
+        releaseVariables['deploymentName'] = deployManifest['name']
+        releaseVariables['deploymentNamespace'] = deployManifest['namespace']
+        releaseVariables['deploymentKind'] = deployManifest['kind']
+    - name: Delete deployment manifest
+      type: fluxcd.DeleteApplication
+      variableMapping:
+        server: "${fluxcdApiServer}"
+        gitRepository: "${gitRepository}"
+        kind: "${deploymentKind}"
+      capabilities:
+      - remote
+      manifestFilename: "${deploymentManifestName}"
+      resourceName: "${deploymentName}"
+      namespace: "${deploymentNamespace}"
+    - name: Delete source manifest
+      type: fluxcd.DeleteSource
+      variableMapping:
+        server: "${fluxcdApiServer}"
+        gitRepository: "${gitRepository}"
+        kind: "${sourceKind}"
+      capabilities:
+      - remote
+      manifestFilename: "${sourceManifestName}"
+      resourceName: "${sourceName}"
+      namespace: "${sourceNamespace}"
+    - name: Delete namespace manifest
+      type: fluxcd.DeleteNamespaceFile
+      variableMapping:
+        server: "${fluxcdApiServer}"
+        gitRepository: "${gitRepository}"
+      capabilities:
+        - remote
+      namespace: "${namespace}"
+    - name: Delete configuration
+      type: xlrelease.ScriptTask
+      script: |-
+        statusWebhookEventSource = configurationApi.getConfiguration("${statusWebhookEventSourceId}")
+        liveDeploymentConfigs = statusWebhookEventSource.getProperty("liveDeploymentConfigs")
+        applicationToDelete = "${applicationName}"
+
+        configToDelete = None
+        for config in liveDeploymentConfigs:
+            if config.getProperty("application") == applicationToDelete:
+                configToDelete = config
+                break
+
+        if configToDelete:
+            liveDeploymentConfigs.remove(configToDelete)
+            statusWebhookEventSource.setProperty("liveDeploymentConfigs", liveDeploymentConfigs)
+            configurationApi.updateConfiguration("${statusWebhookEventSourceId}", statusWebhookEventSource)
+            configurationApi.deleteConfiguration(configToDelete.id)
+  kind: WORKFLOW
+  tags:
+  - Remote FluxCD
+  - application
+  - delete
+  - internal
+  categories:
+    - Application onboarding
+  variables:
+  - type: xlrelease.ReferenceVariable
+    key: gitRepository
+    showOnReleaseStart: false
+    referencedType: fluxcd.GitConfig
+    label: FluxCD resource repository
+    description: Git repository where manifests are stored
+  - type: xlrelease.StringVariable
+    key: sourceName
+    showOnReleaseStart: false
+    label: Name of the source to be deleted
+    description: Name of the source to be deleted
+  - type: xlrelease.StringVariable
+    key: deploymentName
+    showOnReleaseStart: false
+    description: Name of the deployment to be deleted
+  - type: xlrelease.StringVariable
+    key: sourceNamespace
+    showOnReleaseStart: false
+    description: Namespace where the source is located
+  - type: xlrelease.StringVariable
+    key: deploymentNamespace
+    showOnReleaseStart: false
+    description: Namespace where the deployment is located
+  - type: xlrelease.StringVariable
+    key: sourceManifestName
+    showOnReleaseStart: false
+    description: Name of the source manifest
+    requiresValue: false
+  - type: xlrelease.StringVariable
+    key: deploymentManifestName
+    showOnReleaseStart: false
+    description: Name of the deployment manifest
+    requiresValue: false
+  - type: xlrelease.StringVariable
+    key: statusWebhookEventSourceId
+    requiresValue: false
+    showOnReleaseStart: false
+  - type: xlrelease.StringVariable
+    key: liveDeploymentId
+    requiresValue: false
+    showOnReleaseStart: false
+  - type: xlrelease.ReferenceVariable
+    key: fluxcdApiServer
+    requiresValue: false
+    showOnReleaseStart: false
+    referencedType: fluxcd.APIServer
+  - type: xlrelease.StringVariable
+    key: applicationName
+    showOnReleaseStart: false
+    label: Application name
+    description: Name of the FluxCD application to be created
+  - type: xlrelease.StringVariable
+    key: namespace
+    showOnReleaseStart: false
+    label: Namespace
+    description: Namespace to create the FluxCD application in
+  - type: xlrelease.StringVariable
+    key: sourceKind
+    requiresValue: false
+    showOnReleaseStart: false
+    description: Kind of the source
+    valueProvider:
+      type: xlrelease.ListOfStringValueProviderConfiguration
+      values:
+      - GitRepository
+      - HelmRepository
+      - HelmChart
+      - OCIRepository
+  - type: xlrelease.StringVariable
+    key: deploymentKind
+    requiresValue: false
+    showOnReleaseStart: false
+    description: Kind of the deployment
+    valueProvider:
+      type: xlrelease.ListOfStringValueProviderConfiguration
+      values:
+      - Kustomization
+      - HelmRelease
+  disableNotifications: true
+  author: Digital.ai
+  logo:
+    type: xlrelease.TemplateLogo
+    contentType: image/png
+    file: !file "template-logo/b949355de09e9b9e833c07ea8bbe02d466256a6a/fluxcd.svg"

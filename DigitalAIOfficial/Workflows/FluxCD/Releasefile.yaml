@@ -1,0 +1,12 @@
+---
+apiVersion: xl-release/v1
+kind: Import
+spec:
+  imports:
+  - Workflow_FluxCD setup deployment server.yaml
+  - Workflow_FluxCD setup live deployment configuration.yaml
+  - Workflow_FluxCD delete live deployment configuration.yaml
+  - Workflow_FluxCD setup application.yaml
+  - Workflow_FluxCD setup git repository.yaml
+  - Workflow_FluxCD delete application.yaml
+  - Workflow_FluxCD update application.yaml

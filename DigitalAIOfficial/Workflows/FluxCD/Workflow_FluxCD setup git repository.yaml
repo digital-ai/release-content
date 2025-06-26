@@ -1,0 +1,177 @@
+---
+apiVersion: xl-release/v1
+kind: Templates
+metadata:
+  path: Workflows/FluxCD
+  home: Digital.ai - Official/Workflows/FluxCD
+spec:
+  - template: FluxCD setup git repository
+    description: Create required connections for FluxCD git repository
+    scheduledStartDate: 2024-08-28T09:00:00+02:00
+    dueDate: 2024-08-28T10:00:00+02:00
+    phases:
+      - phase: Setup Git repository
+        tasks:
+          - name: Git details input
+            type: xlrelease.UserInputTask
+            description: Please enter the required information below.
+            variables:
+              - gitRepositoryTitle
+              - gitRepositoryUrl
+              - gitBranch
+              - gitPath
+              - gitUsername
+              - gitPassword
+              - gitToken
+              - committerUsername
+              - committerEmail
+              - proxyUrl
+              - proxyUsername
+              - proxyPassword
+              - insecureSkipTLS
+              - caCertificate
+          - name: Create configuration
+            type: xlrelease.ScriptTask
+            description: Create configuration for FluxCD git repository
+            script: |-
+              from com.xebialabs.xlrelease.domain import Configuration
+              from com.xebialabs.deployit.plugin.api.reflect import Type
+
+              gitRepository = Type.valueOf("fluxcd.GitConfig").getDescriptor().newInstance("fluxcd-git-config")
+              gitRepository.title = "${gitRepositoryTitle}"
+              gitRepository.folderId = getCurrentFolder().getId()
+              gitToken = "${gitToken}"
+              gitUsername = "${gitUsername}"
+              gitPassword = "${gitPassword}"
+
+              if gitToken != "":
+                gitRepository.setProperty("fluxcdGitRepositoryAuthenticationMethod", "Token")
+                gitRepository.setProperty("bearerToken", gitToken)
+              elif gitUsername != "" and gitPassword != "":
+                gitRepository.setProperty("fluxcdGitRepositoryAuthenticationMethod", "Basic Auth")
+                gitRepository.setProperty("username", gitUsername)
+                gitRepository.setProperty("password", gitPassword)
+              else:
+                raise Exception("Either token or username and password must be provided")
+              gitRepository.setProperty("url", "${gitRepositoryUrl}")
+              gitRepository.setProperty("branch", "${gitBranch}")
+              gitRepository.setProperty("path", "${gitPath}")
+              gitRepository.setProperty("committerUsername", "${committerUsername}")
+              gitRepository.setProperty("committerEmail", "${committerEmail}")
+              gitRepository.setProperty("insecure", "${insecureSkipTLS}")
+              gitRepository.setProperty("CA", "${caCertificate}")
+
+              gitRepository = configurationApi.addConfiguration(gitRepository)
+
+              releaseVariables['gitRepository'] = gitRepository.getId()
+          - name: Check connection
+            type: xlrelease.ScriptTask
+            description: Check connection to git repository
+            script: |-
+              from java.lang import Throwable
+
+              if not releaseVariables['gitRepository']:
+                raise Exception("Git repository not created. Please re-run previous step first.")
+              gitRepositoryId = releaseVariables['gitRepository']
+              statusResponse = configurationApi.checkStatus(gitRepositoryId)
+
+              if not statusResponse.success:
+                configurationApi.deleteConfiguration(gitRepositoryId)
+                releaseVariables['gitRepository'] = None
+                if "Cannot find active remote runner" in statusResponse.errorText:
+                  raise Exception("Failed to find active remote runner for executing container script.")
+                raise Exception(statusResponse.errorText)
+        color: "#3d6c9e"
+    kind: WORKFLOW
+    categories:
+      - Create Git Repository Connection
+    tags:
+      - Remote FluxCD
+      - deployment server
+      - new
+    variables:
+      - type: xlrelease.StringVariable
+        key: gitRepositoryTitle
+        showOnReleaseStart: false
+        label: Title
+        description: Symbolic name for the configuration
+      - type: xlrelease.StringVariable
+        key: gitRepositoryUrl
+        showOnReleaseStart: false
+        label: URL
+        description: Address where the server can be reached
+      - type: xlrelease.StringVariable
+        key: gitPath
+        showOnReleaseStart: false
+        label: Path
+        description: Path in Git repository where manifest will be stored (e.g. clusters/production)
+      - type: xlrelease.StringVariable
+        key: gitBranch
+        showOnReleaseStart: false
+        label: Branch
+        description: Git branch to push to
+      - type: xlrelease.PasswordStringVariable
+        key: gitToken
+        showOnReleaseStart: false
+        label: Bearer token
+        description: Bearer token for authentication, required if username and password are not provided
+        requiresValue: false
+      - type: xlrelease.StringVariable
+        key: gitUsername
+        label: Username
+        description: Login user ID on the server, required if token is not provided
+        requiresValue: false
+        showOnReleaseStart: false
+      - type: xlrelease.PasswordStringVariable
+        key: gitPassword
+        label: Password
+        description: Login user password on the server, required if token is not provided
+        requiresValue: false
+        showOnReleaseStart: false
+      - type: xlrelease.StringVariable
+        key: committerUsername
+        label: Committer username
+        description: Git username to use for commits
+        showOnReleaseStart: false
+      - type: xlrelease.StringVariable
+        key: committerEmail
+        label: Committer email
+        description: Git email to use for commits
+        showOnReleaseStart: false
+      - type: xlrelease.StringVariable
+        key: proxyUrl
+        label: Proxy URL
+        description: URL of proxy server
+        requiresValue: false
+        showOnReleaseStart: false
+      - type: xlrelease.StringVariable
+        key: proxyUsername
+        label: Proxy Username
+        description: Username of proxy server
+        requiresValue: false
+        showOnReleaseStart: false
+      - type: xlrelease.PasswordStringVariable
+        key: proxyPassword
+        label: Proxy Password
+        description: Proxy password for authentication
+        requiresValue: false
+        showOnReleaseStart: false
+      - type: xlrelease.BooleanVariable
+        key: insecureSkipTLS
+        label: Insecure skip TLS
+        description: Skip TLS verification for OCI repository
+        requiresValue: false
+        showOnReleaseStart: false
+      - type: xlrelease.StringVariable
+        key: caCertificate
+        label: CA Certificate
+        description: Certification authority certificate
+        requiresValue: false
+        showOnReleaseStart: false
+    allowPasswordsInAllFields: true
+    disableNotifications: true
+    author: Digital.ai
+    logo:
+      type: xlrelease.TemplateLogo
+      contentType: image/png
+      file: !file "template-logo/b949355de09e9b9e833c07ea8bbe02d466256a6a/fluxcd.svg"
