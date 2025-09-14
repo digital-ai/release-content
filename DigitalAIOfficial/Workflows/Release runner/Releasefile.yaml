@@ -5,4 +5,3 @@ spec:
   imports:
   - Workflow_Digital.ai Release runner additional install in Kubernetes.yaml
   - Workflow_Digital.ai Release runner install in Kubernetes.yaml
-  - Workflow_Digital.ai Release runner install with Digital.ai Cloud Connector.yaml
