@@ -50,7 +50,7 @@ jobs:
 
       - name: Download and Install xl-cli
         run: |
-          wget https://dist.xebialabs.com/public/xl-cli/$xlcli_version/linux-amd64//xl -O xl1
+          wget https://dist.xebialabs.com/public/xl-cli/$xlcli_version/linux-amd64/xl -O xl1
           chmod 755 xl1
           ./xl1 version
 

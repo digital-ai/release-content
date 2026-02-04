@@ -253,7 +253,7 @@ spec:
               token_note = releaseVariables["runnerName"] + "-" + uid
               
               token_form = CreatePersonalAccessTokenForm(token_note)
-              global_permissions = Set.of("runner#registration")
+              global_permissions = Set.of("runner#edit")
               token_form.setGlobalPermissions(global_permissions)
               
               response = personalAccessTokenApi.createPersonalAccessToken(token_form)
