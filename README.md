@@ -9,7 +9,7 @@ Welcome to the official Digital.ai Release content repository! This repository i
 ## Table of Contents
 
 - [Contributing](#contributing)
-- [How to Release](#how-to-release)
+- [Release process](#release-process)
 - [License](#license)
 
 ## Contributing
@@ -25,12 +25,14 @@ We highly value contributions from our community! If you have a release template
 
 Our dedicated team will carefully review your PR and collaborate with you to incorporate it into the official content. Your contributions are greatly appreciated!
 
-## How to Release
+## Release process
+
+New version should be released at least with every major release of the Release product.
 
 To release a new version of the content, follow these steps:
 
 1. Ensure all changes are thoroughly tested and documented.
-2. Update the version number and changelog as needed.
+2. Update the version number and changelog as needed (xl-cli version is pulled from https://dist.xebialabs.com/public/xl-cli/).
 3. Create a new release on GitHub with the appropriate version tag.
 4. Include release notes detailing the changes made.
 5. Publish the release.
