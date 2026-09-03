@@ -22,5 +22,9 @@
   "release/26.1.x": {
     "releaseVersion": "26.1.0-beta.127",
     "xlCliVersion": "26.1.0-beta.1213"
+  },
+  "release/26.3.x": {
+    "releaseVersion": "26.3.0-901.847",
+    "xlCliVersion": "26.1.5"
   }
 }
